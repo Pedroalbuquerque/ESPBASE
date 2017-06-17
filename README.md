@@ -40,7 +40,7 @@ you can find in this to function a place holder like
       
 You can naturaly include your libraries in the skecth as necessary for your specific code.
 
-## Dependecies
+## Dependencies
 
 ### ESP8266
 To used this libray with ESP8266 not adional libraries are needed (that I can remember, as i have created it for sime time now).
