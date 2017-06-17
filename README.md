@@ -34,6 +34,7 @@ If you succeed, a new port shoud show up (may take a 1 to 3 minutes to show up) 
 
 Assuming you are familiar with the Arduino framework, you have the same two basic function setup() and loop(), that already have some basid code to implement this basic fucntionality of the template.
 you can find in this to function a place holder like
+
     //**** Normal Sketch code here...
       
       write you own setup code after this comment
