@@ -14,8 +14,8 @@ Some basic functionalities are provided:
 
 Download all the files from this folder to a folder on your <projects>/libraries folder .
 
-For a brand new board/sketch you have to build start from the example/template/template.ino and load this sketch using a serial port upload via an FTDI ou other UBS to Serial interface.
-You should copy the example/template to your own projects/<myProj> folder and rename it accordingly.
+For a brand new board/sketch you have to build start from the example/WiFi_CFG_OTA_Telnet/WiFi_CFG_OTA_Telnet.ino and load this sketch using a serial port upload via an FTDI ou other UBS to Serial interface.
+You should copy the example/WiFi_CFG_OTA_Telnet to your own projects/<myProj> folder and rename it accordingly.
 
 Once loaded, the skecth will try to load configuration from EEPROM(flash) (nothing will be saved when loaded for the first time), and if no configuration is found, board will enter in AP mode. 
 In this mode a new AP will be available for you to connect your PC or Mobile phone, with the name "ESP8266-xxxx" or "ESP32-xxxx" and no password.
