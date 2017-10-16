@@ -174,6 +174,7 @@
       // Application Settings here... from EEPROM 192 up to 511 (0 - 511)
 
     EEPROM.commit();
+
   }
 
   boolean ReadConfig(){
