@@ -36,7 +36,7 @@
     #include <ESPmDNS.h>
     #include <WiFiUdp.h>
     #include <ArduinoOTA.h>
-    #include <Ticker.h>
+    #include <Ticker-ESP32.h>
 #elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
     // ESP8266 specific here
   #include <ESP8266WiFi.h>
