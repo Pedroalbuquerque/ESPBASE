@@ -73,6 +73,18 @@ Please Wait....Configuring and Restarting.
 //  SEND HTML PAGE OR IF A FORM SUMBITTED VALUES, PROCESS THESE VALUES
 //
 
+// Check the Values is between 0-255
+boolean checkRange(String Value){
+  if (Value.toInt() < 0 || Value.toInt() > 255)
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
+
 void send_network_configuration_html()
 {
 
@@ -99,6 +111,8 @@ void send_network_configuration_html()
 		}
 		 server.send_P ( 200, "text/html", PAGE_WaitAndReload );
 		WriteConfig();
+        Serial.println("Configuration Saved!!!!");
+
 		//WiFirestart();
 		ESP.restart();
 		//ConfigureWifi();

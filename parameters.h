@@ -1,6 +1,25 @@
 #ifndef PARAMETERS_H
 #define PARAMETERS_H
 
+struct strConfig {
+  boolean dhcp;                         // 1 Byte - EEPROM 16
+  boolean isDayLightSaving;             // 1 Byte - EEPROM 17
+  long Update_Time_Via_NTP_Every;       // 4 Byte - EEPROM 18
+  long timeZone;                        // 4 Byte - EEPROM 22
+  byte  IP[4];                          // 4 Byte - EEPROM 32
+  byte  Netmask[4];                     // 4 Byte - EEPROM 36
+  byte  Gateway[4];                     // 4 Byte - EEPROM 40
+  String ssid;                          // up to 32 Byte - EEPROM 64
+  String password;                      // up to 32 Byte - EEPROM 96
+  String ntpServerName;                 // up to 32 Byte - EEPROM 128
+  String DeviceName;                    // up to 32 Byte - EEPROM 160
+  String OTApwd;                         // up to 32 Byte - EEPROM 192
+
+  // Application Settings here... from EEPROM 224 up to 511 (0 - 511)
+
+} config;
+
+
 
 #ifdef ARDUINO_ESP32_DEV
 
@@ -174,6 +193,7 @@
       // Application Settings here... from EEPROM 192 up to 511 (0 - 511)
 
     EEPROM.commit();
+
   }
 
   boolean ReadConfig(){
@@ -216,9 +236,55 @@
   }
 
 
-
-
 #endif  // ESP8266
+
+void printConfig(){
+
+  Serial.println("Printing Config");
+
+  Serial.printf("DHCP:%d\n", config.dhcp);
+  Serial.printf("DayLight:%d\n", config.isDayLightSaving);
+
+  Serial.printf("NTP update every %ld sec\n", config.Update_Time_Via_NTP_Every); // 4 Byte
+  Serial.printf("Timezone %ld\n", config.timeZone); // 4 Byte
+
+  Serial.printf("IP:%d.%d.%d.%d\n", config.IP[0],config.IP[1],config.IP[2],config.IP[3]);
+  Serial.printf("Mask:%d.%d.%d.%d\n", config.Netmask[0],config.Netmask[1],config.Netmask[2],config.Netmask[3]);
+  Serial.printf("Gateway:%d.%d.%d.%d\n", config.Gateway[0],config.Gateway[1],config.Gateway[2],config.Gateway[3]);
+
+
+  Serial.printf("SSID:%s\n", config.ssid.c_str());
+  Serial.printf("PWD:%s\n", config.password.c_str());
+  Serial.printf("ntp ServerName:%s\n", config.ntpServerName.c_str());
+  Serial.printf("Device Name:%s\n", config.DeviceName.c_str());
+  Serial.printf("OTA password:%s\n", config.OTApwd.c_str());
+
+    // Application Settings here... from EEPROM 192 up to 511 (0 - 511)
+
+}
+
+void configLoadDefaults(uint16_t ChipId){
+
+  #ifdef ARDUINO_ESP32_DEV
+    config.ssid = "ESP32-" + String(ChipId,HEX);       // SSID of access point
+  #elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
+    config.ssid = "ESP8266-" + String(ChipId,HEX);       // SSID of access point
+  #endif
+  config.password = "" ;   // password of access point
+  config.dhcp = true;
+  config.IP[0] = 192; config.IP[1] = 168; config.IP[2] = 1; config.IP[3] = 100;
+  config.Netmask[0] = 255; config.Netmask[1] = 255; config.Netmask[2] = 255; config.Netmask[3] = 0;
+  config.Gateway[0] = 192; config.Gateway[1] = 168; config.Gateway[2] = 1; config.Gateway[3] = 254;
+  config.ntpServerName = "0.ch.pool.ntp.org"; //"0.ch.pool.ntp.org"; // to be adjusted to PT ntp.ist.utl.pt
+  config.Update_Time_Via_NTP_Every =  5;
+  config.timeZone = 1;
+  config.isDayLightSaving = true;
+  config.DeviceName = "Not Named";
+  config.OTApwd = "";
+
+  return;
+
+}
 
 
 #endif
