@@ -58,7 +58,7 @@
 class ESPBASE {
 public:
     bool WIFI_connected, CFG_saved;
-    uint8_t initialize();
+    void initialize();
     void httpSetup();
     void OTASetup();
 };
@@ -81,7 +81,7 @@ public:
 
 //char tmpESP[100];
 
-uint8_t ESPBASE::initialize(){
+void ESPBASE::initialize(){
 
   CFG_saved = false;
   WIFI_connected = false;

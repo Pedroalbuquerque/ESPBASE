@@ -14,8 +14,5 @@ Ticker tkSecond;												  // Second - Timer for Updating Datetime Structure
 long absoluteActualTime, actualTime;
 long  customWatchdog;                     // WatchDog to detect main loop blocking. There is a builtin WatchDog to the chip firmare not related to this one
 
-//#include "baseWifi.h"
-
-
 
 #endif

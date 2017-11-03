@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #include <ESPBASE.h>
 
 
@@ -14,7 +16,7 @@ void setup() {
 
    // put your setup code here, to run once:
 
-   
+
    TelnetServer.begin();            // Optional in case you want to use telnet as Monitor
    TelnetServer.setNoDelay(true);   // Optional in case you want to use telnet as Monitor
 
@@ -22,8 +24,8 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
   //Serial.println(millis());
+
   // OTA request handling
   ArduinoOTA.handle();
 
@@ -31,9 +33,10 @@ void loop() {
   server.handleClient();
 
    //  feed de DOG :)
-   customWatchdog = millis();
+  customWatchdog = millis();
 
  // activate telnet service to act as output console
+
   if (TelnetServer.hasClient()){            // Optional in case you want to use telnet as Monitor
     if (!Telnet || !Telnet.connected()){
       if(Telnet) Telnet.stop();
@@ -42,6 +45,7 @@ void loop() {
       TelnetServer.available().stop();
     }
   }
+
 
     //**** Normal Skecth code here ...
 

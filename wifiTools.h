@@ -1,5 +1,5 @@
-#ifndef BASEWIFI_H
-#define BASEWIFI_H
+#ifndef WIFITOOLS_H
+#define WIFITOOLS_H 
 
 
 #ifdef ARDUINO_ESP32_DEV

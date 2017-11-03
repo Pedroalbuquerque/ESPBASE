@@ -1,0 +1,17 @@
+{
+    "name": "ESPBASE",
+    "keywords": "wifi, OTA, NTP, iot, ESP8266, ESP32",
+    "description": "A library that include basic functionalities for wifi devices",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Pedroalbuquerque/ESPBASE"
+    },
+    "version": "0.1.4",
+    "exclude": "",
+    "examples": "examples/*/*.ino",
+    "frameworks": "arduino",
+    "platforms": [
+        "atmelavr",
+        "espressif"
+    ]
+}
