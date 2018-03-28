@@ -14,8 +14,15 @@ struct strConfig {
   String ntpServerName;                 // up to 32 Byte - EEPROM 128
   String DeviceName;                    // up to 32 Byte - EEPROM 160
   String OTApwd;                         // up to 32 Byte - EEPROM 192
+  
 
   // Application Settings here... from EEPROM 224 up to 511 (0 - 511)
+  //mqtt data
+  String mqtt_server;                          	// up to 32 Byte - EEPROM 224
+  String mqtt_port;                          	// up to 32 Byte - EEPROM 256
+  String mqtt_username;							// up to 32 Byte - EEPROM 288
+  String mqtt_password;							// up to 32 Byte - EEPROM 320
+  String mqtt_prefix;							// up to 32 Byte - EEPROM 352
 
 } config;
 
@@ -59,6 +66,14 @@ struct strConfig {
     EEPROM.putString("ntpSN", config.ntpServerName);
     EEPROM.putString("DevN", config.DeviceName);
     EEPROM.putString("OTApwd", config.OTApwd);
+	
+	 //mqtt data
+	 EEPROM.putString("mqtt_server", config.mqtt_server);
+	 EEPROM.putString("mqtt_port", config.mqtt_port);
+	 EEPROM.putString("mqtt_username", config.mqtt_username);
+	 EEPROM.putString("mqtt_password", config.mqtt_password);
+	 EEPROM.putString("mqtt_prefix", config.mqtt_prefix);
+	 
 
 
   }
@@ -90,6 +105,13 @@ struct strConfig {
       config.OTApwd = EEPROM.getString("OTApwd");
 
       // Application parameters here ... from EEPROM 192 to 511
+	  //MQTT data
+	  config.mqtt_server=EEPROM.getString("mqtt_server");
+	  config.mqtt_port=EEPROM.getString("mqtt_port");
+	  config.mqtt_username=EEPROM.getString("mqtt_username");
+	  config.mqtt_password=EEPROM.getString("mqtt_password");
+	  config.mqtt_prefix=EEPROM.getString("mqtt_prefix");
+	  
 
       return true;
 
