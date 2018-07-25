@@ -73,10 +73,10 @@ public:
 #include "Page_Admin.h"
 #include "Page_Script.js.h"
 #include "Page_Style.css.h"
-#include "Page_NTPsettings.h"
+#include "Page_NTPSettings.h"
 #include "Page_Information.h"
 #include "Page_General.h"
-#include "PAGE_NetworkConfiguration.h"
+#include "Page_NetworkConfiguration.h"
 
 
 //char tmpESP[100];
