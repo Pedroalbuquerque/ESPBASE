@@ -1,4 +1,4 @@
-/*
+ /*
     ESP Base
     Copyright (C) 2017  Pedro Albuquerque
 
@@ -38,7 +38,7 @@
     #include <ESPmDNS.h>
     #include <WiFiUdp.h>
     #include <ArduinoOTA.h>
-    #include <Ticker-ESP32.h>
+    #include <Ticker.h>
 #elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
     // ESP8266 specific here
   #include <ESP8266WiFi.h>
