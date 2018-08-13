@@ -245,6 +245,26 @@ void ESPBASE::OTASetup(){
 
 }
 
+void ESPBASE::loop(){
+  if (Esp.CFG_saved) {
+    int wifi_retry = 0;
+
+    while(WiFi.status() != WL_CONNECTED && wifi_retry < 5 ) {
+      wifi_retry++;
+      Serial.println("WiFi not connected. Try to reconnect");
+      WiFi.disconnect();
+
+      WiFi.mode(WIFI_OFF);
+      WiFi.mode(WIFI_STA);
+      WiFi.begin(config.ssid.c_str(), config.password.c_str());
+      delay(100);
+    }
+
+    if(wifi_retry >= 5) {
+      Serial.println("\nReboot");
+      ESP.restart();
+    }
+}
 
 
 #endif
