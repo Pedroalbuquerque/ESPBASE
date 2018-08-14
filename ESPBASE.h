@@ -57,9 +57,12 @@
 
 class ESPBASE {
 public:
-    bool WIFI_connected, CFG_saved;
+    bool WIFI_connected;
+    bool CFG_saved;
     void initialize();
     void handle();
+
+private:
     void httpSetup();
     void OTASetup();
 };
