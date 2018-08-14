@@ -26,16 +26,12 @@ void loop() {
   // put your main code here, to run repeatedly:
   //Serial.println(millis());
 
-  // OTA request handling
-  ArduinoOTA.handle();
+  //ESPBASE hamdling
+  Esp.handle();
 
-  //  WebServer requests handling
-  server.handleClient();
 
-   //  feed de DOG :)
-  customWatchdog = millis();
 
- // activate telnet service to act as output console
+  // activate telnet service to act as output console
 
   if (TelnetServer.hasClient()){            // Optional in case you want to use telnet as Monitor
     if (!Telnet || !Telnet.connected()){
@@ -46,8 +42,7 @@ void loop() {
     }
   }
 
-
-    //**** Normal Skecth code here ...
+  //**** Normal Skecth code here ...
 
 
 }

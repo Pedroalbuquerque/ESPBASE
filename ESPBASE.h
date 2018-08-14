@@ -59,6 +59,7 @@ class ESPBASE {
 public:
     bool WIFI_connected, CFG_saved;
     void initialize();
+    void handle();
     void httpSetup();
     void OTASetup();
 };
@@ -245,8 +246,11 @@ void ESPBASE::OTASetup(){
 
 }
 
-void ESPBASE::loop(){
-  if (Esp.CFG_saved) {
+void ESPBASE::handle() {
+  //  feed de DOG :)
+  customWatchdog = millis();
+
+  if (CFG_saved) {
     int wifi_retry = 0;
 
     while(WiFi.status() != WL_CONNECTED && wifi_retry < 5 ) {
@@ -264,6 +268,12 @@ void ESPBASE::loop(){
       Serial.println("\nReboot");
       ESP.restart();
     }
+  }
+    // OTA request handling
+  ArduinoOTA.handle();
+
+  //  WebServer requests handling
+  server.handleClient();
 }
 
 
