@@ -1,5 +1,5 @@
 #ifndef WIFITOOLS_H
-#define WIFITOOLS_H 
+#define WIFITOOLS_H
 
 
 #ifdef ARDUINO_ESP32_DEV
@@ -47,9 +47,9 @@ String GetAPMacAddress(){
 
 uint16_t getChipId(){
   uint16_t id;
-  uint64_t chipId;
 
   #ifdef ARDUINO_ESP32_DEV
+    uint64_t chipId;
     chipId = ESP.getEfuseMac();
     id = (uint16_t)(chipId>>32);
   #elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU

@@ -129,14 +129,24 @@ void ESPBASE::initialize(){
       }
       Serial.print("Wifi ip:");Serial.println(WiFi.localIP());
   }
+  else {
+    //load config with default values
+    configLoadDefaults(getChipId());
 
-  if ( !WIFI_connected or !CFG_saved){ // if no values saved or not good use defaults
+  }
+
+  if ( !WIFI_connected ){ // if no values saved or not good use defaults
 
     // DEFAULT CONFIG
     Serial.println("Setting AP mode default parameters");
 
-    //load config with default values
-    configLoadDefaults(getChipId());
+    //if not connect always start AP mode with default name
+    #ifdef ARDUINO_ESP32_DEV
+      config.ssid = "ESP32-" + String(getChipId(),HEX);       // SSID of access point
+    #elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
+      config.ssid = "ESP8266-" + String(getChipId(),HEX);       // SSID of access point
+    #endif
+
 
     WiFi.mode(WIFI_AP);
     WiFi.softAP(config.ssid.c_str());
