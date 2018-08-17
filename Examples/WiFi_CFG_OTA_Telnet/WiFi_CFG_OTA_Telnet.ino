@@ -12,6 +12,7 @@ ESPBASE Esp;
 
 WiFiEventHandler wifiConnectHandler;
 WiFiEventHandler wifiDisconnectHandler;
+Ticker wifiReconnectTimer;
 
 
 void setup() {
@@ -28,32 +29,24 @@ void setup() {
    pinMode(LED_PIN,OUTPUT);
 
    wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
+   wifiConnectHandler = WiFi.onStationModeGotIP(onWifiConnect);
 
 }
 
 void onWifiDisconnect(const WiFiEventStationModeDisconnected& event) {
   DEBUG_MSG("Disconnected from Wi-Fi.");
-  DEBUG_MSG("[mqtt] on Wifi Disconnect mode:%d\n",WiFi.getMode());
-
+  delay(2000); //wait 2 sec and try again
   //mqttReconnectTimer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
-  //wifiReconnectTimer.once(2, WiFiconnect); // when wifi connect, mqtt will connect also
-  //DEBUG_MSG("[mqtt] on wifi disconnect end\n");
+  Esp.WiFiconnect(); // when wifi connect, mqtt will connect also
+}
+void onWifiConnect(const WiFiEventStationModeGotIP& event) {
+  DEBUG_MSG("[mqtt] Connected to Wi-Fi.");
+  //connectToMqtt();
 }
 
 
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  static uint32_t blinkTimer = millis();
-  uint16_t interval = 1000;
-  static uint8_t ledON = false;
-  if(millis() > blinkTimer + interval){
-    ledON = !ledON;
-    digitalWrite(LED_PIN,ledON);
-    blinkTimer = millis();
-  }
-
-
 
   // OTA request handling
   ArduinoOTA.handle();
@@ -77,6 +70,21 @@ void loop() {
 
 
     //**** Normal Skecth code here ...
+
+
+    // put your main code here, to run repeatedly:
+
+    //blink a LED as an example
+    static uint32_t blinkTimer = millis();
+    uint16_t interval = 1000;
+    static uint8_t ledON = false;
+    if(millis() > blinkTimer + interval){
+      ledON = !ledON;
+      digitalWrite(LED_PIN,ledON);
+      blinkTimer = millis();
+    }
+
+
 
 
 }

@@ -61,6 +61,8 @@ public:
     void initialize();
     void httpSetup();
     void OTASetup();
+    void WiFiconnect();
+
 };
 
 #include "parameters.h"
@@ -83,75 +85,9 @@ public:
 
 void ESPBASE::initialize(){
 
-  CFG_saved = false;
-  WIFI_connected = false;
-  uint8_t timeoutClick = 50;
+    //  Wifi connect to an AP or start as a AP
 
-  String chipID;
-
-  // define parameters storage
-  #ifdef ARDUINO_ESP32_DEV
-    EEPROM.begin("ESPBASE", false);
-    PWM_initialize(LED_esp,256,0,5000,13);
-  #elif ARDUINO_ESP8266_NODEMCU || ARDUINO_ESP8266_ESP01
-    EEPROM.begin(512); // define an EEPROM space of 512Bytes to store data
-  #endif
-
-  //**** Network Config load
-  CFG_saved = ReadConfig();
-
-  //  Connect to WiFi access point or start as Access point
-  if (CFG_saved) { //if config saved use saved values
-
-      // Connect the ESP8266 to local WIFI network in Station mode
-      // using SSID and password saved in parameters (config object)
-      Serial.println("Booting");
-      //printConfig();
-      WiFi.mode(WIFI_OFF);
-      WiFi.mode(WIFI_STA);
-      WiFi.begin(config.ssid.c_str(), config.password.c_str());
-      Serial.print("millis from:");Serial.println(millis());
-      //WIFI_connected = WiFi.waitForConnectResult();
-      while((WiFi.status()!= WL_CONNECTED) and --timeoutClick > 0) {
-        delay(500);
-        Serial.print(".");
-      }
-      Serial.print("millis to:");Serial.println(millis());
-      if(WiFi.status()!= WL_CONNECTED )
-      {
-          Serial.println("Connection Failed! activating to AP mode...");
-          WIFI_connected = false;
-      }
-      else
-      {
-        WIFI_connected = true;
-        Serial.println("****** Connected! ******");
-      }
-      Serial.print("Wifi ip:");Serial.println(WiFi.localIP());
-  }
-  else {
-    //load config with default values
-    configLoadDefaults(getChipId());
-
-  }
-
-  if ( !WIFI_connected ){ // if no values saved or not good use defaults
-
-    // DEFAULT CONFIG
-    Serial.println("Setting AP mode default parameters");
-
-    //if not connect always start AP mode with default name
-    #ifdef ARDUINO_ESP32_DEV
-      config.ssid = "ESP32-" + String(getChipId(),HEX);       // SSID of access point
-    #elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
-      config.ssid = "ESP8266-" + String(getChipId(),HEX);       // SSID of access point
-    #endif
-
-
-    WiFi.mode(WIFI_AP);
-    WiFi.softAP(config.ssid.c_str());
-    Serial.print("Wifi ip:");Serial.println(WiFi.softAPIP());
-   }
+    WiFiconnect();
 
     //  Http Setup
 
@@ -172,6 +108,83 @@ void ESPBASE::initialize(){
 
 }
 
+void ESPBASE::WiFiconnect(){
+  WIFI_connected = false;
+
+  if(!WiFi.isConnected()){
+    CFG_saved = false;
+
+    String chipID;
+
+    // define parameters storage
+    #ifdef ARDUINO_ESP32_DEV
+      EEPROM.begin("ESPBASE", false);
+      PWM_initialize(LED_esp,256,0,5000,13);
+    #elif ARDUINO_ESP8266_NODEMCU || ARDUINO_ESP8266_ESP01
+      EEPROM.begin(512); // define an EEPROM space of 512Bytes to store data
+    #endif
+
+    //**** Network Config load
+    CFG_saved = ReadConfig();
+
+    //  Connect to WiFi access point or start as Access point
+    if (CFG_saved) { //if config saved use saved values
+
+        // Connect the ESP8266 to local WIFI network in Station mode
+        // using SSID and password saved in parameters (config object)
+        Serial.println("Booting");
+        //printConfig();
+        WiFi.mode(WIFI_OFF);
+        WiFi.mode(WIFI_STA);
+        WiFi.begin(config.ssid.c_str(), config.password.c_str());
+        Serial.print("millis from:");Serial.println(millis());
+        //WIFI_connected = WiFi.waitForConnectResult();
+        uint8_t timeoutClick = 50;
+        while((WiFi.status()!= WL_CONNECTED) and --timeoutClick > 0) {
+          delay(500);
+          Serial.print(".");
+        }
+        Serial.print("millis to:");Serial.println(millis());
+        if(WiFi.status()!= WL_CONNECTED )
+        {
+            Serial.println("Connection Failed! activating to AP mode...");
+            WIFI_connected = false;
+        }
+        else
+        {
+          WIFI_connected = true;
+          Serial.println("****** Connected! ******");
+        }
+        Serial.print("Wifi ip:");Serial.println(WiFi.localIP());
+    }
+    else {
+      //load config with default values
+      configLoadDefaults(getChipId());
+
+    }
+
+    if ( !WIFI_connected ){ // if no values saved or not good use defaults
+
+      // DEFAULT CONFIG
+      Serial.println("Setting AP mode default parameters");
+
+      //if not connect always start AP mode with default name
+      #ifdef ARDUINO_ESP32_DEV
+        config.ssid = "ESP32-" + String(getChipId(),HEX);       // SSID of access point
+      #elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
+        config.ssid = "ESP8266-" + String(getChipId(),HEX);       // SSID of access point
+      #endif
+
+
+      WiFi.mode(WIFI_AP);
+      WiFi.softAP(config.ssid.c_str());
+      Serial.print("Wifi ip:");Serial.println(WiFi.softAPIP());
+     }
+  }
+  else
+    Serial.print("[WiFi]WiFi already connected\n");
+
+}
 
 void ESPBASE::httpSetup(){
   // Start HTTP Server for configuration
