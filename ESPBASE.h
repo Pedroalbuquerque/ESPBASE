@@ -109,10 +109,9 @@ void ESPBASE::initialize(){
 }
 
 void ESPBASE::WiFiconnect(){
-  WIFI_connected = false;
 
   if(!WiFi.isConnected()){
-    CFG_saved = false;
+    WIFI_connected = false;
 
     String chipID;
 
@@ -134,6 +133,7 @@ void ESPBASE::WiFiconnect(){
         // using SSID and password saved in parameters (config object)
         Serial.println("Booting");
         //printConfig();
+        WiFi.disconnect(); // just to be sure ...
         WiFi.mode(WIFI_OFF);
         WiFi.mode(WIFI_STA);
         WiFi.begin(config.ssid.c_str(), config.password.c_str());
@@ -175,15 +175,17 @@ void ESPBASE::WiFiconnect(){
         config.ssid = "ESP8266-" + String(getChipId(),HEX);       // SSID of access point
       #endif
 
-
+      WiFi.disconnect(); // just to be sure ...
+      WiFi.mode(WIFI_OFF);
       WiFi.mode(WIFI_AP);
       WiFi.softAP(config.ssid.c_str());
       Serial.print("Wifi ip:");Serial.println(WiFi.softAPIP());
      }
   }
-  else
+  else{
     Serial.print("[WiFi]WiFi already connected\n");
-
+    WIFI_connected = true;
+  }
 }
 
 void ESPBASE::httpSetup(){
