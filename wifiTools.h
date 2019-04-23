@@ -2,10 +2,12 @@
 #define WIFITOOLS_H
 
 
-#ifdef ARDUINO_ESP32_DEV
+#if defined(ESP32)
   ESP32WebServer server(80);							// The Webserver
-#elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
+#elif defined(ESP8266) //ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
   ESP8266WebServer server(80);							// The Webserver
+#else
+  #error NO Board defined
 #endif
 
 /*
@@ -14,12 +16,12 @@
 **
 */
 void ConfigureWifi(){
-  Serial.println("Configuring Wifi");
+  ECHO_MSG("Configuring Wifi\n");
   //WiFi.mode(WIFI_OFF);
   WiFi.begin (config.ssid.c_str(), config.password.c_str());
 
   while (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi not connected");
+    ECHO_MSG("WiFi not connected\n");
     delay(500);
   }
   if (!config.dhcp)
@@ -48,13 +50,14 @@ String GetAPMacAddress(){
 uint16_t getChipId(){
   uint16_t id;
 
-  #ifdef ARDUINO_ESP32_DEV
+  #if defined(ESP32)
     uint64_t chipId;
     chipId = ESP.getEfuseMac();
     id = (uint16_t)(chipId>>32);
-  #elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
+  #elif defined(ESP8266)
     id = ESP.getChipId();
-
+  #else
+    #error NO Board defined
   #endif
     return id;
 

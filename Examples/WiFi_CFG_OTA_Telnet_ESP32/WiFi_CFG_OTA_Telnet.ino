@@ -10,14 +10,12 @@ WiFiClient Telnet;            // Optional in case you want to use telnet as Moni
 
 ESPBASE Esp;
 
-WiFiEventHandler wifiConnectHandler;
-WiFiEventHandler wifiDisconnectHandler;
-Ticker wifiReconnectTimer;
+//Ticker wifiReconnectTimer;
 
 
 void setup() {
   Serial.begin(115200);
-   Esp.initialize();
+   Esp.initialize(false);
 
    // put your setup code here, to run once:
 
@@ -28,20 +26,7 @@ void setup() {
 
    pinMode(LED_PIN,OUTPUT);
 
-   wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
-   wifiConnectHandler = WiFi.onStationModeGotIP(onWifiConnect);
 
-}
-
-void onWifiDisconnect(const WiFiEventStationModeDisconnected& event) {
-  DEBUG_MSG("Disconnected from Wi-Fi.");
-  delay(2000); //wait 2 sec and try again
-  //mqttReconnectTimer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
-  Esp.WiFiconnect(); // when wifi connect, mqtt will connect also
-}
-void onWifiConnect(const WiFiEventStationModeGotIP& event) {
-  DEBUG_MSG("[mqtt] Connected to Wi-Fi.");
-  //connectToMqtt();
 }
 
 

@@ -111,7 +111,7 @@ void send_network_configuration_html()
 		}
 		 server.send_P ( 200, "text/html", PAGE_WaitAndReload );
 		WriteConfig();
-        Serial.println("Configuration Saved!!!!");
+        ECHO_MSG("Configuration Saved!!!!");
 
 		//WiFirestart();
 		ESP.restart();
@@ -121,7 +121,7 @@ void send_network_configuration_html()
 	{
 		server.send_P ( 200, "text/html", PAGE_NetworkConfiguration );
 	}
-	Serial.println(__FUNCTION__);
+	ECHO_MSG(__FUNCTION__);
 }
 
 
@@ -151,7 +151,7 @@ void send_network_configuration_values_html()
 	values += "gw_3|" +  (String) config.Gateway[3] + "|input\n";
 	values += "dhcp|" +  (String) (config.dhcp ? "checked" : "") + "|chk\n";
 	server.send ( 200, "text/plain", values);
-	Serial.println(__FUNCTION__);
+	ECHO_MSG(__FUNCTION__);
 
 }
 
@@ -204,9 +204,9 @@ void send_connection_state_values_html()
 				quality = 2 * (WiFi.RSSI(i) + 100);
 			}
 
-#ifdef ARDUINO_ESP32_DEV
+#if defined(ESP32)
 			Networks += "<tr><td><a href='javascript:selssid(\""  +  String(WiFi.SSID(i))  + "\")'>"  +  String(WiFi.SSID(i))  + "</a></td><td>" +  String(quality) + "%</td><td>" +  String((WiFi.encryptionType(i) == WIFI_AUTH_OPEN)?" ":"*")  + "</td></tr>";
-#elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
+#elif defined(ESP8266)
 			Networks += "<tr><td><a href='javascript:selssid(\""  +  String(WiFi.SSID(i))  + "\")'>"  +  String(WiFi.SSID(i))  + "</a></td><td>" +  String(quality) + "%</td><td>" +  String((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":"*")  + "</td></tr>";
 #endif
 		}
@@ -217,6 +217,6 @@ void send_connection_state_values_html()
 	values += "connectionstate|" +  state + "|div\n";
 	values += "networks|" +  Networks + "|div\n";
 	server.send ( 200, "text/plain", values);
-	Serial.println(__FUNCTION__);
+	ECHO_MSG(__FUNCTION__);
 	AdminTimeOutCounter=0;
 }

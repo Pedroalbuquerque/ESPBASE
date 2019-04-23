@@ -22,13 +22,13 @@ const char PAGE_AdminGeneralSettings[] PROGMEM =  R"=====(
 </form>
 <script>
 
- 
+
 
 window.onload = function ()
 {
-	load("style.css","css", function() 
+	load("style.css","css", function()
 	{
-		load("microajax.js","js", function() 
+		load("microajax.js","js", function()
 		{
 				setValues("/admin/generalvalues");
 		});
@@ -45,32 +45,32 @@ function load(e,t,n){if("js"==t){var a=document.createElement("script");a.src=e,
 // Functions for this Page
 void send_devicename_value_html()
 {
-		
+
 	String values ="";
 	values += "devicename|" + (String) config.DeviceName + "|div\n";
     values += "OTApwd|" + (String) config.OTApwd + "|div\n";
 	server.send ( 200, "text/plain", values);
-	Serial.println(__FUNCTION__); 
-	
+	ECHO_MSG(__FUNCTION__);
+
 }
 
 void send_general_html()
 {
-	
+
 	if (server.args() > 0 )  // Save Settings
-	{	
+	{
 		String temp = "";
 		for ( uint8_t i = 0; i < server.args(); i++ ) {
-			if (server.argName(i) == "devicename") config.DeviceName = urldecode(server.arg(i)); 
+			if (server.argName(i) == "devicename") config.DeviceName = urldecode(server.arg(i));
             if (server.argName(i) == "OTApwd") config.OTApwd = urldecode(server.arg(i));
 		}
 		WriteConfig();
 		firstStart = true;
 	}
-	server.send_P ( 200, "text/html", PAGE_AdminGeneralSettings ); 
-	Serial.println(__FUNCTION__); 
-	
-	
+	server.send_P ( 200, "text/html", PAGE_AdminGeneralSettings );
+	ECHO_MSG(__FUNCTION__);
+
+
 }
 
 void send_general_configuration_values_html()
@@ -78,8 +78,8 @@ void send_general_configuration_values_html()
 	String values ="";
 	values += "devicename|" +  (String)  config.DeviceName +  "|input\n";
     values += "OTApwd|" +  (String)  config.OTApwd +  "|input\n";
- 
+
 	server.send ( 200, "text/plain", values);
-	Serial.println(__FUNCTION__); 
+	ECHO_MSG(__FUNCTION__);
   AdminTimeOutCounter=0;
 }

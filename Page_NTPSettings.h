@@ -51,13 +51,13 @@ const char PAGE_NTPConfiguration[] PROGMEM = R"=====(
 </table>
 </form>
 <script>
-  
+
 
 window.onload = function ()
 {
-  load("style.css","css", function() 
+  load("style.css","css", function()
   {
-    load("microajax.js","js", function() 
+    load("microajax.js","js", function()
     {
         setValues("/admin/ntpvalues");
     });
@@ -78,31 +78,31 @@ void send_NTP_configuration_html()
     config.isDayLightSaving = false;
     String temp = "";
     for ( uint8_t i = 0; i < server.args(); i++ ) {
-      if (server.argName(i) == "ntpserver") config.ntpServerName = urldecode( server.arg(i)); 
-      if (server.argName(i) == "update") config.Update_Time_Via_NTP_Every =  server.arg(i).toInt(); 
-      if (server.argName(i) == "tz") config.timeZone =  server.arg(i).toInt(); 
-      if (server.argName(i) == "dst") config.isDayLightSaving = true; 
+      if (server.argName(i) == "ntpserver") config.ntpServerName = urldecode( server.arg(i));
+      if (server.argName(i) == "update") config.Update_Time_Via_NTP_Every =  server.arg(i).toInt();
+      if (server.argName(i) == "tz") config.timeZone =  server.arg(i).toInt();
+      if (server.argName(i) == "dst") config.isDayLightSaving = true;
     }
     WriteConfig();
-   
+
     firstStart = true;
   }
-  server.send_P ( 200, "text/html", PAGE_NTPConfiguration ); 
-  Serial.println(__FUNCTION__); 
-  
+  server.send_P ( 200, "text/html", PAGE_NTPConfiguration );
+  ECHO_MSG(__FUNCTION__);
+
 }
 
 
 
 void send_NTP_configuration_values_html()
 {
-    
+
   String values ="";
   values += "ntpserver|" + (String) config.ntpServerName + "|input\n";
   values += "update|" +  (String) config.Update_Time_Via_NTP_Every + "|input\n";
   values += "tz|" +  (String) config.timeZone + "|input\n";
   values += "dst|" +  (String) (config.isDayLightSaving ? "checked" : "") + "|chk\n";
   server.send ( 200, "text/plain", values);
-  Serial.println(__FUNCTION__); 
+  ECHO_MSG(__FUNCTION__);
   AdminTimeOutCounter=0;
 }
