@@ -131,7 +131,7 @@ void ESPBASE::WiFiconnect(uint8_t asStation = true){
   if(!CFG_saved){
     //load config with default values
     configLoadDefaults(getChipId());
-
+    asStation = false;
   }
 
   // is asStaion try to connect and return on sucess
