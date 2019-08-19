@@ -67,6 +67,7 @@ void loop() {
       ledON = !ledON;
       digitalWrite(LED_PIN,ledON);
       blinkTimer = millis();
+      DEBUG_MSG("Led:%d\n",ledON);
     }
 
 
