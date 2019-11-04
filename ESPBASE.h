@@ -105,12 +105,11 @@ void ESPBASE::initialize( uint8_t asStation = true){
 
 
     // start internal time update ISR
-    #if defined(ESP32) //ARDUINO_ESP32_DEV
-      tkSecond.attach(1000000, ISRsecondTick);
-    #elif defined(ESP8266) //ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
-      tkSecond.attach(1, ISRsecondTick);
-    #endif
+    tkSecond.attach(1, ISRsecondTick);
 
+    if(WIFI_connected){
+      getNTPtime();
+    }
     ECHO_MSG("Ready\n");
 
 }

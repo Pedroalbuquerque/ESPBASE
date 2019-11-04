@@ -190,6 +190,8 @@ void send_connection_state_values_html()
 		Networks += "<tr bgcolor='#DDDDDD' ><td><strong>Name</strong></td><td><strong>Quality</strong></td><td><strong>Enc</strong></td><tr>";
 		for (int i = 0; i < n; ++i)
 		{
+			/*
+			// this code no longer required as RSSI being displayed directly in dBm
 			int quality=0;
 			if(WiFi.RSSI(i) <= -100)
 			{
@@ -203,11 +205,13 @@ void send_connection_state_values_html()
 			{
 				quality = 2 * (WiFi.RSSI(i) + 100);
 			}
-
+			*/
 #if defined(ESP32)
-			Networks += "<tr><td><a href='javascript:selssid(\""  +  String(WiFi.SSID(i))  + "\")'>"  +  String(WiFi.SSID(i))  + "</a></td><td>" +  String(quality) + "%</td><td>" +  String((WiFi.encryptionType(i) == WIFI_AUTH_OPEN)?" ":"*")  + "</td></tr>";
+			//Networks += "<tr><td><a href='javascript:selssid(\""  +  String(WiFi.SSID(i))  + "\")'>"  +  String(WiFi.SSID(i))  + "</a></td><td>" +  String(quality) + "%</td><td>" +  String((WiFi.encryptionType(i) == WIFI_AUTH_OPEN)?" ":"*")  + "</td></tr>";
+			Networks += "<tr><td><a href='javascript:selssid(\""  +  String(WiFi.SSID(i))  + "\")'>"  +  String(WiFi.SSID(i))  + "</a></td><td>" +  String(WiFi.RSSI(i)) + "dBm</td><td>" +  String((WiFi.encryptionType(i) == WIFI_AUTH_OPEN)?" ":"*")  + "</td></tr>";
 #elif defined(ESP8266)
-			Networks += "<tr><td><a href='javascript:selssid(\""  +  String(WiFi.SSID(i))  + "\")'>"  +  String(WiFi.SSID(i))  + "</a></td><td>" +  String(quality) + "%</td><td>" +  String((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":"*")  + "</td></tr>";
+			//Networks += "<tr><td><a href='javascript:selssid(\""  +  String(WiFi.SSID(i))  + "\")'>"  +  String(WiFi.SSID(i))  + "</a></td><td>" +  String(quality) + "%</td><td>" +  String((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":"*")  + "</td></tr>";
+			Networks += "<tr><td><a href='javascript:selssid(\""  +  String(WiFi.SSID(i))  + "\")'>"  +  String(WiFi.SSID(i))  + "</a></td><td>" +  String(WiFi.RSSI(i)) + "dBm</td><td>" +  String((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":"*")  + "</td></tr>";
 #endif
 		}
 		Networks += "</table>";
