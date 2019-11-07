@@ -62,7 +62,12 @@ void send_general_html()
 		String temp = "";
 		for ( uint8_t i = 0; i < server.args(); i++ ) {
 			if (server.argName(i) == "devicename") config.DeviceName = urldecode(server.arg(i));
-            if (server.argName(i) == "OTApwd") config.OTApwd = urldecode(server.arg(i));
+            if (server.argName(i) == "OTApwd") {
+				if(strlen(urldecode(server.arg(i)).c_str()) >=8)
+					config.OTApwd = urldecode(server.arg(i));
+				else
+					config.OTApwd = "";
+			}
 		}
 		WriteConfig();
 		firstStart = true;
