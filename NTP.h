@@ -28,7 +28,7 @@ strDateTime DateTime;                      // Global DateTime structure, will be
 const int NTP_PACKET_SIZE = 48;
 byte packetBuffer[ NTP_PACKET_SIZE];
 
-void getNTPtime(){
+boolean getNTPtime(){
   unsigned long _unixTime = 0;
 
   if (WiFi.status() == WL_CONNECTED)
@@ -37,7 +37,7 @@ void getNTPtime(){
     IPAddress timeServerIP;
     WiFi.hostByName(config.ntpServerName.c_str(), timeServerIP);
 
-    //Serial.println("sending NTP packet...");
+    //ECHO_MSG("sending NTP packet...");
     memset(packetBuffer, 0, NTP_PACKET_SIZE);
     packetBuffer[0] = 0b11100011;   // LI, Version, Mode
     packetBuffer[1] = 0;     // Stratum, or type of clock
@@ -55,12 +55,12 @@ void getNTPtime(){
 
     int cb = UDPNTPClient.parsePacket();
     if (cb == 0) {
-      Serial.println("No NTP packet yet");
+      ECHO_MSG("No NTP packet yet");
+      return false;
     }
     else
     {
-      Serial.print("NTP packet received, length=");
-      Serial.println(cb);
+      ECHO_MSG("NTP packet received, length=%d\n",cb);
       UDPNTPClient.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
       unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
       unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
@@ -69,12 +69,19 @@ void getNTPtime(){
       _unixTime = secsSince1900 - seventyYears;
 
     }
-  } else {
-    Serial.println("Internet yet not connected");
+  }
+  else {
+    ECHO_MSG("Internet not yet connected");
     delay(500);
+    return false;
   }
   yield();
-  if (_unixTime > 0) UnixTimestamp = _unixTime; // store universally available time stamp
+  if (_unixTime > 0){
+    UnixTimestamp = _unixTime; // store universally available time stamp
+    return true;
+  }
+  else
+    return false;
 }
 
 strDateTime ConvertUnixTimeStamp( unsigned long _tempTimeStamp) {
@@ -139,14 +146,13 @@ boolean summerTime(unsigned long _timeStamp ) {
 
   if (_tempDateTime.month < 3 || _tempDateTime.month > 10) return false; // keine Sommerzeit in Jan, Feb, Nov, Dez
   if (_tempDateTime.month > 3 && _tempDateTime.month < 10) return true; // Sommerzeit in Apr, Mai, Jun, Jul, Aug, Sep
-  if (_tempDateTime.month == 3 && (_tempDateTime.hour + 24 * _tempDateTime.day) >= (3 +  24 * (31 - (5 * _tempDateTime.year / 4 + 4) % 7)) || _tempDateTime.month == 10 && (_tempDateTime.hour + 24 * _tempDateTime.day) < (3 +  24 * (31 - (5 * _tempDateTime.year / 4 + 1) % 7)))
+  if ((_tempDateTime.month == 3 && (_tempDateTime.hour + 24 * _tempDateTime.day) >= (3 +  24 * (31 - (5 * _tempDateTime.year / 4 + 4) % 7)) )||( _tempDateTime.month == 10 && (_tempDateTime.hour + 24 * _tempDateTime.day) < (3 +  24 * (31 - (5 * _tempDateTime.year / 4 + 1) % 7))))
     return true;
   else
     return false;
 }
 
 unsigned long adjustTimeZone(unsigned long _timeStamp, int _timeZone, bool _isDayLightSavingSaving) {
-  strDateTime _tempDateTime;
   _timeStamp += _timeZone *  360; // adjust timezone
   // printTime("Innerhalb adjustTimeZone ", ConvertUnixTimeStamp(_timeStamp));
   if (_isDayLightSavingSaving && summerTime(_timeStamp)) _timeStamp += 3600; // Sommerzeit beachten
@@ -154,18 +160,19 @@ unsigned long adjustTimeZone(unsigned long _timeStamp, int _timeZone, bool _isDa
 }
 
 void ISRsecondTick(){
-  strDateTime _tempDateTime;
   AdminTimeOutCounter++;
   cNTP_Update++;
   UnixTimestamp++;
   absoluteActualTime = adjustTimeZone(UnixTimestamp, config.timeZone, config.isDayLightSaving);
   DateTime = ConvertUnixTimeStamp(absoluteActualTime);  //  convert to DateTime format
   actualTime = 3600 * DateTime.hour + 60 * DateTime.minute + DateTime.second;
+  /*
   if (millis() - customWatchdog > 30000){
-    Serial.println("CustomWatchdog bites. Bye");
+    ECHO_MSG("CustomWatchdog bites. Bye");
       //ESP.reset();
       ESP.restart();
   }
+  */
 }
 
 #endif

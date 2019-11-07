@@ -12,8 +12,13 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
+<<<<<<< HEAD
             "executable": "/Users/pedroalbuquerque/Documents/GoogleDrive/Projects/libraries/ESPBASE/Examples/WiFi_CFG_OTA_Telnet/.pio/build/nodemcuv2/firmware.elf",
             "toolchainBinDir": "/Users/pedroalbuquerque/.platformio/packages/toolchain-xtensa/bin",
+=======
+            "executable": "/Users/pedroalbuquerque/Documents/GoogleDrive/Projects/libraries/ESPBASE/Examples/WiFi_CFG_OTA_Telnet/.pio/build/esp32/firmware.elf",
+            "toolchainBinDir": "/Users/pedroalbuquerque/.platformio/packages/toolchain-xtensa32/bin",
+>>>>>>> WiFi_Reconnect
             "preLaunchTask": {
                 "type": "PlatformIO",
                 "task": "Pre-Debug"
@@ -24,8 +29,13 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
+<<<<<<< HEAD
             "executable": "/Users/pedroalbuquerque/Documents/GoogleDrive/Projects/libraries/ESPBASE/Examples/WiFi_CFG_OTA_Telnet/.pio/build/nodemcuv2/firmware.elf",
             "toolchainBinDir": "/Users/pedroalbuquerque/.platformio/packages/toolchain-xtensa/bin",
+=======
+            "executable": "/Users/pedroalbuquerque/Documents/GoogleDrive/Projects/libraries/ESPBASE/Examples/WiFi_CFG_OTA_Telnet/.pio/build/esp32/firmware.elf",
+            "toolchainBinDir": "/Users/pedroalbuquerque/.platformio/packages/toolchain-xtensa32/bin",
+>>>>>>> WiFi_Reconnect
             "internalConsoleOptions": "openOnSessionStart"
         }
     ]

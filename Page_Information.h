@@ -9,7 +9,7 @@ const char PAGE_Information[] PROGMEM = R"=====(
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" href="style.css" type="text/css" />
-<script src="microajax.js"></script> 
+<script src="microajax.js"></script>
 <a href="/"  class="btn btn--s"><</a>&nbsp;&nbsp;<strong>Network Information</strong>
 <hr>
 <table border="0"  cellspacing="0" cellpadding="3" style="width:310px" >
@@ -31,9 +31,9 @@ function GetState()
 
 window.onload = function ()
 {
-  load("style.css","css", function() 
+  load("style.css","css", function()
   {
-    load("microajax.js","js", function() 
+    load("microajax.js","js", function()
     {
         GetState();
     });
@@ -49,7 +49,7 @@ function load(e,t,n){if("js"==t){var a=document.createElement("script");a.src=e,
 
 //
 // FILL WITH INFOMATION
-// 
+//
 
 void send_information_values_html ()
 {
@@ -62,7 +62,7 @@ void send_information_values_html ()
   values += "x_netmask|" +  (String) WiFi.subnetMask()[0] + "." +  (String) WiFi.subnetMask()[1] + "." +  (String) WiFi.subnetMask()[2] + "." + (String) WiFi.subnetMask()[3] +  "|div\n";
   values += "x_mac|" + GetMacAddress() +  "|div\n";
   server.send ( 200, "text/plain", values);
-  Serial.println(__FUNCTION__); 
+  ECHO_MSG(__FUNCTION__);
   AdminTimeOutCounter=0;
 }
 

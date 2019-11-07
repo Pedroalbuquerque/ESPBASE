@@ -27,23 +27,26 @@
 #define ESPBASE_H
 
 #include <Arduino.h>
-
 #include <string.h>
+#include <DebugTools.h>
 
-#ifdef ARDUINO_ESP32_DEV
+
+#if defined(ESP32)
     //ESP32 specific here
     #include <ESP32PWM.h>
     #include <ESP32WebServer.h>
+    #include <HTTPClient.h>
     #include <WiFi.h>
     #include <ESPmDNS.h>
     #include <WiFiUdp.h>
     #include <ArduinoOTA.h>
-    #include <Ticker-ESP32.h>
-#elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
+    #include <Ticker.h>
+#elif defined(ESP8266) //ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
     // ESP8266 specific here
   #include <ESP8266WiFi.h>
   #include <ESP8266mDNS.h>
   #include <ESP8266WebServer.h>
+  #include <ESP8266HTTPClient.h>
   #include <WiFiUdp.h>
   #include <ArduinoOTA.h>
   #include <Ticker.h>
@@ -51,16 +54,21 @@
   extern "C" {
   #include "user_interface.h"
   }
+#else
+  #warning NO Board defined
 #endif
 
+extern WiFiClient Telnet;
 
 
 class ESPBASE {
 public:
     bool WIFI_connected, CFG_saved;
-    void initialize();
+    void initialize(uint8_t asStation);
     void httpSetup();
     void OTASetup();
+    void WiFiconnect(uint8_t asStation);
+
 };
 
 #include "parameters.h"
@@ -81,68 +89,13 @@ public:
 
 //char tmpESP[100];
 
-void ESPBASE::initialize(){
+void ESPBASE::initialize( uint8_t asStation = true){
 
-  CFG_saved = false;
-  WIFI_connected = false;
-  uint8_t timeoutClick = 50;
-
-  String chipID;
-
-  // define parameters storage
-  #ifdef ARDUINO_ESP32_DEV
-    EEPROM.begin("ESPBASE", false);
-    PWM_initialize(LED_esp,256,0,5000,13);
-  #elif ARDUINO_ESP8266_NODEMCU || ARDUINO_ESP8266_ESP01
-    EEPROM.begin(512); // define an EEPROM space of 512Bytes to store data
-  #endif
-
-  //**** Network Config load
-  CFG_saved = ReadConfig();
-
-  //  Connect to WiFi access point or start as Access point
-  if (CFG_saved) { //if config saved use saved values
-
-      // Connect the ESP8266 to local WIFI network in Station mode
-      // using SSID and password saved in parameters (config object)
-      Serial.println("Booting");
-      //printConfig();
-      WiFi.mode(WIFI_OFF);
-      WiFi.mode(WIFI_STA);
-      WiFi.begin(config.ssid.c_str(), config.password.c_str());
-      Serial.print("millis from:");Serial.println(millis());
-      //WIFI_connected = WiFi.waitForConnectResult();
-      while((WiFi.status()!= WL_CONNECTED) and --timeoutClick > 0) {
-        delay(500);
-        Serial.print(".");
-      }
-      Serial.print("millis to:");Serial.println(millis());
-      if(WiFi.status()!= WL_CONNECTED )
-      {
-          Serial.println("Connection Failed! activating to AP mode...");
-          WIFI_connected = false;
-      }
-      else
-      {
-        WIFI_connected = true;
-        Serial.println("****** Connected! ******");
-      }
-      Serial.print("Wifi ip:");Serial.println(WiFi.localIP());
-  }
-
-  if ( !WIFI_connected or !CFG_saved){ // if no values saved or not good use defaults
-
-    // DEFAULT CONFIG
-    Serial.println("Setting AP mode default parameters");
-
-    //load config with default values
-    configLoadDefaults(getChipId());
-
-    WiFi.mode(WIFI_AP);
-    WiFi.softAP(config.ssid.c_str());
-    Serial.print("Wifi ip:");Serial.println(WiFi.softAPIP());
-   }
-
+    //  Wifi connect to an AP or start as a AP
+    //if (asStation)
+      WiFiconnect( asStation );
+    //else
+    //  startAP();
     //  Http Setup
 
     httpSetup();
@@ -152,32 +105,110 @@ void ESPBASE::initialize(){
 
 
     // start internal time update ISR
-    #ifdef ARDUINO_ESP32_DEV
-      tkSecond.attach(1000000, ISRsecondTick);
-    #elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
-      tkSecond.attach(1, ISRsecondTick);
-    #endif
+    tkSecond.attach(1, ISRsecondTick);
 
-    Serial.println("Ready");
+    if(WIFI_connected){
+      getNTPtime();
+    }
+    ECHO_MSG("Ready\n");
 
 }
 
+void ESPBASE::WiFiconnect(uint8_t asStation = true){
+
+  // define parameters storage
+  #if defined(ESP32)  //ARDUINO_ESP32_DEV
+    EEPROM.begin("ESPBASE", false);
+    //PWM_initialize(LED_esp,256,0,5000,13);
+  #elif defined(ESP8266) //ARDUINO_ESP8266_NODEMCU || ARDUINO_ESP8266_ESP01
+    EEPROM.begin(512); // define an EEPROM space of 512Bytes to store data
+  #endif
+
+  //**** Network Config load
+  CFG_saved = ReadConfig();
+
+  if(!CFG_saved){
+    //load config with default values
+    configLoadDefaults(getChipId());
+    asStation = false;
+  }
+
+  // is asStaion try to connect and return on sucess
+  if(asStation){
+
+    if(!WiFi.isConnected() ){ // if not connected
+      WIFI_connected = false;
+
+      String chipID;
+
+      // Connect the ESP8266 to local WIFI network in Station mode
+      // using SSID and password saved in parameters (config object)
+      ECHO_MSG("Booting");
+      //printConfig();
+      WiFi.disconnect(); // just to be sure ...
+      WiFi.mode(WIFI_OFF);
+      WiFi.mode(WIFI_STA);
+      WiFi.begin(config.ssid.c_str(), config.password.c_str());
+      //WIFI_connected = WiFi.waitForConnectResult();
+      uint8_t timeoutClick = 50;
+      while((WiFi.status()!= WL_CONNECTED) and --timeoutClick > 0) {
+        delay(500);
+        ECHO_MSG(".");
+      }
+      if(WiFi.status()!= WL_CONNECTED )
+      {
+          ECHO_MSG("Connection Failed! activating to AP mode...\n");
+          WIFI_connected = false;
+      }
+      else
+      {
+        WIFI_connected = true;
+        ECHO_MSG("****** Connected! ******\n");
+        ECHO_MSG("Wifi ip:");ECHO_PORT.println(WiFi.localIP());
+        return;  // if sucess exit
+      }
+    }
+    else{
+      ECHO_MSG("[WiFi]WiFi already connected\n");
+      WIFI_connected = true;
+      return; // if sucess exit
+    }
+
+  }
+
+  //else
+  // Start as AP if failed or not asStation
+
+  // DEFAULT CONFIG
+  ECHO_MSG("Setting AP mode default parameters\n");
+
+  WiFi.disconnect(); // just to be sure ...
+  WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_AP);
+  String ssidAP = config.DeviceName + String(getChipId(),HEX);
+  String ssidPWD = config.OTApwd;
+  DEBUG_MSG("AP start:%d\n",WiFi.softAP(ssidAP.c_str(),config.OTApwd.c_str()));
+  ECHO_MSG("AP:%s\n",ssidAP.c_str());
+  ECHO_MSG("Wifi ip:");ECHO_PORT.println(WiFi.softAPIP());
+
+  return;
+}
 
 void ESPBASE::httpSetup(){
   // Start HTTP Server for configuration
   server.on ( "/", []() {
-    Serial.println("admin.html");
+    ECHO_MSG("admin.html\n");
     server.send_P ( 200, "text/html", PAGE_AdminMainPage);  // const char top of page
   }  );
   server.on ( "/favicon.ico",   []() {
-    Serial.println("favicon.ico");
+    ECHO_MSG("favicon.ico\n");
     server.send( 200, "text/html", "" );
   }  );
   // Network config
   server.on ( "/config.html", send_network_configuration_html );
   // Info Page
   server.on ( "/info.html", []() {
-    Serial.println("info.html");
+    ECHO_MSG("info.html\n");
     server.send_P ( 200, "text/html", PAGE_Information );
   }  );
   server.on ( "/ntp.html", send_NTP_configuration_html  );
@@ -186,11 +217,11 @@ void ESPBASE::httpSetup(){
   server.on ( "/general.html", send_general_html  );
   //  server.on ( "/example.html", []() { server.send_P ( 200, "text/html", PAGE_EXAMPLE );  } );
   server.on ( "/style.css", []() {
-    Serial.println("style.css");
+    ECHO_MSG("style.css\n");
     server.send_P ( 200, "text/plain", PAGE_Style_css );
   } );
   server.on ( "/microajax.js", []() {
-    Serial.println("microajax.js");
+    ECHO_MSG("microajax.js\n");
     server.send_P ( 200, "text/plain", PAGE_microajax_js );
   } );
   server.on ( "/admin/values", send_network_configuration_values_html );
@@ -201,11 +232,11 @@ void ESPBASE::httpSetup(){
   server.on ( "/admin/generalvalues", send_general_configuration_values_html);
   server.on ( "/admin/devicename",     send_devicename_value_html);
   server.onNotFound ( []() {
-    Serial.println("Page Not Found");
+    ECHO_MSG("Page Not Found\n");
     server.send ( 400, "text/html", "Page not Found" );
   }  );
   server.begin();
-  Serial.println( "HTTP server started" );
+  ECHO_MSG( "HTTP server started\n" );
 
   return;
 }
@@ -214,28 +245,29 @@ void ESPBASE::OTASetup(){
 
       //ArduinoOTA.setHostname(host);
       ArduinoOTA.onStart([]() { // what to do before OTA download insert code here
-          Serial.println("Start");
+          ECHO_MSG("Start\n");
         });
       ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+        ECHO_MSG("Progress: %u%%\r", (progress / (total / 100)));
       });
       ArduinoOTA.onEnd([]() { // do a fancy thing with our board led at end
           for (int i=0;i<30;i++){
             analogWrite(LED_esp,(i*100) % 1001);
             delay(50);
           }
+          analogWrite(LED_esp,0); //switch OFF PWM
           digitalWrite(LED_esp,HIGH); // Switch OFF ESP LED to save energy
-          Serial.println("\nEnd");
+          ECHO_MSG("\nEnd\n");
           ESP.restart();
         });
 
       ArduinoOTA.onError([](ota_error_t error) {
-          Serial.printf("Error[%u]: ", error);
-          if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-          else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-          else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-          else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-          else if (error == OTA_END_ERROR) Serial.println("End Failed");
+          ECHO_MSG("Error[%u]: ", error);
+          if (error == OTA_AUTH_ERROR) {ECHO_MSG("Auth Failed\n");}
+          else if (error == OTA_BEGIN_ERROR) {ECHO_MSG("Begin Failed\n");}
+          else if (error == OTA_CONNECT_ERROR) {ECHO_MSG("Connect Failed\n");}
+          else if (error == OTA_RECEIVE_ERROR) {ECHO_MSG("Receive Failed\n");}
+          else if (error == OTA_END_ERROR) {ECHO_MSG("End Failed\n");}
           ESP.restart();
         });
 

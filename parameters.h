@@ -1,3 +1,4 @@
+ 
 #ifndef PARAMETERS_H
 #define PARAMETERS_H
 
@@ -21,7 +22,7 @@ struct strConfig {
 
 
 
-#ifdef ARDUINO_ESP32_DEV
+#if defined(ESP32) // ARDUINO_ESP32_DEV
 
   #include <Preferences.h>
 
@@ -29,7 +30,7 @@ struct strConfig {
 
   void WriteConfig(){
 
-    Serial.println("Writing Config");
+    ECHO_MSG("Writing Config\n");
     EEPROM.putString("head", "CFG");
 
 
@@ -63,10 +64,10 @@ struct strConfig {
 
   }
   boolean ReadConfig(){
-    Serial.println("Reading Configuration");
+    ECHO_MSG("Reading Configuration\n");
     if (EEPROM.getString("head") == "CFG" )
     {
-      Serial.println("Configurarion Found!");
+      ECHO_MSG("Configurarion Found!\n");
       config.dhcp = EEPROM.getUChar("dhcp",0);
       config.isDayLightSaving = EEPROM.getUChar("isDayLight");
       config.Update_Time_Via_NTP_Every = EEPROM.getULong("NTPrate"); // 4 Byte
@@ -96,14 +97,14 @@ struct strConfig {
     }
     else
     {
-      Serial.println("Configurarion NOT FOUND!!!!");
+      ECHO_MSG("Configurarion NOT FOUND!!!!\n");
       return false;
     }
   }
 
 
 
-#elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
+#elif defined(ESP8266) //ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
   //  Auxiliar function to handle EEPROM
   // EEPROM-parameters
 
@@ -134,7 +135,7 @@ struct strConfig {
   void WriteStringToEEPROM(int beginaddress, String string){
     char  charBuf[string.length() + 1];
     string.toCharArray(charBuf, string.length() + 1);
-    for (int t =  0; t < sizeof(charBuf); t++)
+    for (uint16_t t =  0; t < sizeof(charBuf); t++)
     {
       EEPROM.write(beginaddress + t, charBuf[t]);
     }
@@ -158,7 +159,7 @@ struct strConfig {
 
   void WriteConfig(){
 
-    Serial.println("Writing Config");
+    ECHO_MSG("Writing Config\n");
     EEPROM.write(0, 'C');
     EEPROM.write(1, 'F');
     EEPROM.write(2, 'G');
@@ -197,10 +198,10 @@ struct strConfig {
   }
 
   boolean ReadConfig(){
-    Serial.println("Reading Configuration");
+    ECHO_MSG("Reading Configuration\n");
     if (EEPROM.read(0) == 'C' && EEPROM.read(1) == 'F'  && EEPROM.read(2) == 'G' )
     {
-      Serial.println("Configurarion Found!");
+      ECHO_MSG("Configurarion Found!\n");
       config.dhcp = 	EEPROM.read(16);
       config.isDayLightSaving = EEPROM.read(17);
       config.Update_Time_Via_NTP_Every = EEPROMReadlong(18); // 4 Byte
@@ -230,7 +231,7 @@ struct strConfig {
     }
     else
     {
-      Serial.println("Configurarion NOT FOUND!!!!");
+      ECHO_MSG("Configurarion NOT FOUND!!!!\n");
       return false;
     }
   }
@@ -240,24 +241,24 @@ struct strConfig {
 
 void printConfig(){
 
-  Serial.println("Printing Config");
+  ECHO_MSG("Printing Config\n");
 
-  Serial.printf("DHCP:%d\n", config.dhcp);
-  Serial.printf("DayLight:%d\n", config.isDayLightSaving);
+  ECHO_MSG("DHCP:%d\n", config.dhcp);
+  ECHO_MSG("DayLight:%d\n", config.isDayLightSaving);
 
-  Serial.printf("NTP update every %ld sec\n", config.Update_Time_Via_NTP_Every); // 4 Byte
-  Serial.printf("Timezone %ld\n", config.timeZone); // 4 Byte
+  ECHO_MSG("NTP update every %ld sec\n", config.Update_Time_Via_NTP_Every); // 4 Byte
+  ECHO_MSG("Timezone %ld\n", config.timeZone); // 4 Byte
 
-  Serial.printf("IP:%d.%d.%d.%d\n", config.IP[0],config.IP[1],config.IP[2],config.IP[3]);
-  Serial.printf("Mask:%d.%d.%d.%d\n", config.Netmask[0],config.Netmask[1],config.Netmask[2],config.Netmask[3]);
-  Serial.printf("Gateway:%d.%d.%d.%d\n", config.Gateway[0],config.Gateway[1],config.Gateway[2],config.Gateway[3]);
+  ECHO_MSG("IP:%d.%d.%d.%d\n", config.IP[0],config.IP[1],config.IP[2],config.IP[3]);
+  ECHO_MSG("Mask:%d.%d.%d.%d\n", config.Netmask[0],config.Netmask[1],config.Netmask[2],config.Netmask[3]);
+  ECHO_MSG("Gateway:%d.%d.%d.%d\n", config.Gateway[0],config.Gateway[1],config.Gateway[2],config.Gateway[3]);
 
 
-  Serial.printf("SSID:%s\n", config.ssid.c_str());
-  Serial.printf("PWD:%s\n", config.password.c_str());
-  Serial.printf("ntp ServerName:%s\n", config.ntpServerName.c_str());
-  Serial.printf("Device Name:%s\n", config.DeviceName.c_str());
-  Serial.printf("OTA password:%s\n", config.OTApwd.c_str());
+  ECHO_MSG("SSID:%s\n", config.ssid.c_str());
+  ECHO_MSG("PWD:%s\n", config.password.c_str());
+  ECHO_MSG("ntp ServerName:%s\n", config.ntpServerName.c_str());
+  ECHO_MSG("Device Name:%s\n", config.DeviceName.c_str());
+  ECHO_MSG("OTA password:%s\n", config.OTApwd.c_str());
 
     // Application Settings here... from EEPROM 192 up to 511 (0 - 511)
 
@@ -265,9 +266,9 @@ void printConfig(){
 
 void configLoadDefaults(uint16_t ChipId){
 
-  #ifdef ARDUINO_ESP32_DEV
+  #if defined(ESP32) // ARDUINO_ESP32_DEV
     config.ssid = "ESP32-" + String(ChipId,HEX);       // SSID of access point
-  #elif ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
+  #elif defined(ESP8266) //ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
     config.ssid = "ESP8266-" + String(ChipId,HEX);       // SSID of access point
   #endif
   config.password = "" ;   // password of access point
@@ -275,7 +276,7 @@ void configLoadDefaults(uint16_t ChipId){
   config.IP[0] = 192; config.IP[1] = 168; config.IP[2] = 1; config.IP[3] = 100;
   config.Netmask[0] = 255; config.Netmask[1] = 255; config.Netmask[2] = 255; config.Netmask[3] = 0;
   config.Gateway[0] = 192; config.Gateway[1] = 168; config.Gateway[2] = 1; config.Gateway[3] = 254;
-  config.ntpServerName = "0.ch.pool.ntp.org"; //"0.ch.pool.ntp.org"; // to be adjusted to PT ntp.ist.utl.pt
+  config.ntpServerName = "0.pt.pool.ntp.org"; //"0.ch.pool.ntp.org"; // to be adjusted to PT ntp.ist.utl.pt
   config.Update_Time_Via_NTP_Every =  5;
   config.timeZone = 1;
   config.isDayLightSaving = true;
