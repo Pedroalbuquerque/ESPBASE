@@ -201,7 +201,7 @@ struct strConfig {
     ECHO_MSG("Reading Configuration\n");
     if (EEPROM.read(0) == 'C' && EEPROM.read(1) == 'F'  && EEPROM.read(2) == 'G' )
     {
-      ECHO_MSG("Configurarion Found!\n");
+      ECHO_MSG("Configuration Found!\n");
       config.dhcp = 	EEPROM.read(16);
       config.isDayLightSaving = EEPROM.read(17);
       config.Update_Time_Via_NTP_Every = EEPROMReadlong(18); // 4 Byte

@@ -65,10 +65,11 @@ class ESPBASE {
 public:
     bool WIFI_connected, CFG_saved;
     void initialize(uint8_t asStation);
+    void initialize(uint8_t asStation, int32_t channel , const uint8_t *bssid);
     void httpSetup();
     void OTASetup();
     void WiFiconnect(uint8_t asStation);
-
+    void WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bssid);
 };
 
 #include "parameters.h"
@@ -90,22 +91,30 @@ public:
 //char tmpESP[100];
 
 void ESPBASE::initialize( uint8_t asStation = true){
+  initialize( asStation, 0 , (const uint8_t *)__null);
+}
+void ESPBASE::initialize(uint8_t asStation, int32_t channel , const uint8_t *bssid){
 
     //  Wifi connect to an AP or start as a AP
     //if (asStation)
-      WiFiconnect( asStation );
+    WiFiconnect( asStation, channel, bssid);
     //else
     //  startAP();
     //  Http Setup
 
+    yield();
     httpSetup();
+    ECHO_MSG("HTTP setup complete!\n");
 
     // ***********  OTA SETUP
+    yield();
     OTASetup();
+    ECHO_MSG("OTA setup complete!\n");
 
 
     // start internal time update ISR
     tkSecond.attach(1, ISRsecondTick);
+    ECHO_MSG("Time ISR setup complete!\n");
 
     if(WIFI_connected){
       getNTPtime();
@@ -116,6 +125,10 @@ void ESPBASE::initialize( uint8_t asStation = true){
 
 void ESPBASE::WiFiconnect(uint8_t asStation = true){
 
+  WiFiconnect( asStation, 0 , (const uint8_t *)__null);
+
+}
+void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bssid){
   // define parameters storage
   #if defined(ESP32)  //ARDUINO_ESP32_DEV
     EEPROM.begin("ESPBASE", false);
@@ -127,6 +140,8 @@ void ESPBASE::WiFiconnect(uint8_t asStation = true){
   //**** Network Config load
   CFG_saved = ReadConfig();
 
+  DEBUG_MSG("[ESPBASE] CFG_saved:%d\n",CFG_saved);
+  
   if(!CFG_saved){
     //load config with default values
     configLoadDefaults(getChipId());
@@ -148,7 +163,7 @@ void ESPBASE::WiFiconnect(uint8_t asStation = true){
       WiFi.disconnect(); // just to be sure ...
       WiFi.mode(WIFI_OFF);
       WiFi.mode(WIFI_STA);
-      WiFi.begin(config.ssid.c_str(), config.password.c_str());
+      WiFi.begin(config.ssid.c_str(), config.password.c_str(), channel, bssid);
       //WIFI_connected = WiFi.waitForConnectResult();
       uint8_t timeoutClick = 50;
       while((WiFi.status()!= WL_CONNECTED) and --timeoutClick > 0) {
@@ -186,7 +201,6 @@ void ESPBASE::WiFiconnect(uint8_t asStation = true){
   WiFi.mode(WIFI_OFF);
   WiFi.mode(WIFI_AP);
   String ssidAP = config.DeviceName + String(getChipId(),HEX);
-  String ssidPWD = config.OTApwd;
   DEBUG_MSG("AP start:%d\n",WiFi.softAP(ssidAP.c_str(),config.OTApwd.c_str()));
   ECHO_MSG("AP:%s\n",ssidAP.c_str());
   ECHO_MSG("Wifi ip:");ECHO_PORT.println(WiFi.softAPIP());
@@ -242,14 +256,17 @@ void ESPBASE::httpSetup(){
 }
 
 void ESPBASE::OTASetup(){
-
+      DEBUG_MSG("[OTAsetup] start\n");
       //ArduinoOTA.setHostname(host);
+      
       ArduinoOTA.onStart([]() { // what to do before OTA download insert code here
           ECHO_MSG("Start\n");
         });
+      
       ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
         ECHO_MSG("Progress: %u%%\r", (progress / (total / 100)));
       });
+
       ArduinoOTA.onEnd([]() { // do a fancy thing with our board led at end
           for (int i=0;i<30;i++){
             analogWrite(LED_esp,(i*100) % 1001);

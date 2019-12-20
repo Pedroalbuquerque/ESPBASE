@@ -28,62 +28,6 @@ strDateTime DateTime;                      // Global DateTime structure, will be
 const int NTP_PACKET_SIZE = 48;
 byte packetBuffer[ NTP_PACKET_SIZE];
 
-boolean getNTPtime(){
-  unsigned long _unixTime = 0;
-
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    UDPNTPClient.begin(2390);  // Port for NTP receive
-    IPAddress timeServerIP;
-    WiFi.hostByName(config.ntpServerName.c_str(), timeServerIP);
-
-    //ECHO_MSG("sending NTP packet...");
-    memset(packetBuffer, 0, NTP_PACKET_SIZE);
-    packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-    packetBuffer[1] = 0;     // Stratum, or type of clock
-    packetBuffer[2] = 6;     // Polling Interval
-    packetBuffer[3] = 0xEC;  // Peer Clock Precision
-    packetBuffer[12]  = 49;
-    packetBuffer[13]  = 0x4E;
-    packetBuffer[14]  = 49;
-    packetBuffer[15]  = 52;
-    UDPNTPClient.beginPacket(timeServerIP, 123);
-    UDPNTPClient.write(packetBuffer, NTP_PACKET_SIZE);
-    UDPNTPClient.endPacket();
-
-    delay(100);
-
-    int cb = UDPNTPClient.parsePacket();
-    if (cb == 0) {
-      ECHO_MSG("No NTP packet yet");
-      return false;
-    }
-    else
-    {
-      ECHO_MSG("NTP packet received, length=%d\n",cb);
-      UDPNTPClient.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
-      unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
-      unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
-      unsigned long secsSince1900 = highWord << 16 | lowWord;
-      const unsigned long seventyYears = 2208988800UL;
-      _unixTime = secsSince1900 - seventyYears;
-
-    }
-  }
-  else {
-    ECHO_MSG("Internet not yet connected");
-    delay(500);
-    return false;
-  }
-  yield();
-  if (_unixTime > 0){
-    UnixTimestamp = _unixTime; // store universally available time stamp
-    return true;
-  }
-  else
-    return false;
-}
-
 strDateTime ConvertUnixTimeStamp( unsigned long _tempTimeStamp) {
   strDateTime _tempDateTime;
   uint8_t year;
@@ -158,6 +102,67 @@ unsigned long adjustTimeZone(unsigned long _timeStamp, int _timeZone, bool _isDa
   if (_isDayLightSavingSaving && summerTime(_timeStamp)) _timeStamp += 3600; // Sommerzeit beachten
   return _timeStamp;
 }
+
+boolean getNTPtime(){
+  unsigned long _unixTime = 0;
+
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    UDPNTPClient.begin(2390);  // Port for NTP receive
+    IPAddress timeServerIP;
+    WiFi.hostByName(config.ntpServerName.c_str(), timeServerIP);
+
+    //ECHO_MSG("sending NTP packet...");
+    memset(packetBuffer, 0, NTP_PACKET_SIZE);
+    packetBuffer[0] = 0b11100011;   // LI, Version, Mode
+    packetBuffer[1] = 0;     // Stratum, or type of clock
+    packetBuffer[2] = 6;     // Polling Interval
+    packetBuffer[3] = 0xEC;  // Peer Clock Precision
+    packetBuffer[12]  = 49;
+    packetBuffer[13]  = 0x4E;
+    packetBuffer[14]  = 49;
+    packetBuffer[15]  = 52;
+    UDPNTPClient.beginPacket(timeServerIP, 123);
+    UDPNTPClient.write(packetBuffer, NTP_PACKET_SIZE);
+    UDPNTPClient.endPacket();
+
+    delay(100);
+
+    int cb = UDPNTPClient.parsePacket();
+    if (cb == 0) {
+      ECHO_MSG("[NTP] No NTP packet yet\n");
+      return false;
+    }
+    else
+    {
+      ECHO_MSG("[NTP] NTP packet received, length=%d\n",cb);
+      UDPNTPClient.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
+      unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
+      unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
+      unsigned long secsSince1900 = highWord << 16 | lowWord;
+      const unsigned long seventyYears = 2208988800UL;
+      _unixTime = secsSince1900 - seventyYears;
+
+    }
+  }
+  else {
+    ECHO_MSG("[NTP] Internet not yet connected");
+    delay(500);
+    return false;
+  }
+  yield();
+  if (_unixTime > 0){
+    UnixTimestamp = _unixTime; // store universally available time stamp
+    absoluteActualTime = adjustTimeZone(UnixTimestamp, config.timeZone, config.isDayLightSaving);
+    DateTime = ConvertUnixTimeStamp(absoluteActualTime);  //  convert to DateTime format
+    actualTime = 3600 * DateTime.hour + 60 * DateTime.minute + DateTime.second;
+
+    return true;
+  }
+  else
+    return false;
+}
+
 
 void ISRsecondTick(){
   AdminTimeOutCounter++;

@@ -71,6 +71,7 @@ void send_general_html()
 		}
 		WriteConfig();
 		firstStart = true;
+		ESP.restart();
 	}
 	server.send_P ( 200, "text/html", PAGE_AdminGeneralSettings );
 	ECHO_MSG(__FUNCTION__);
