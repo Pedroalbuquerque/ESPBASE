@@ -17,6 +17,12 @@ Connect to Router with these settings:<br>
 <tr><td align="right">IP:     </td><td><input type="text" id="ip_0" name="ip_0" size="3">.<input type="text" id="ip_1" name="ip_1" size="3">.<input type="text" id="ip_2" name="ip_2" size="3">.<input type="text" id="ip_3" name="ip_3" value="" size="3"></td></tr>
 <tr><td align="right">Netmask:</td><td><input type="text" id="nm_0" name="nm_0" size="3">.<input type="text" id="nm_1" name="nm_1" size="3">.<input type="text" id="nm_2" name="nm_2" size="3">.<input type="text" id="nm_3" name="nm_3" size="3"></td></tr>
 <tr><td align="right">Gateway:</td><td><input type="text" id="gw_0" name="gw_0" size="3">.<input type="text" id="gw_1" name="gw_1" size="3">.<input type="text" id="gw_2" name="gw_2" size="3">.<input type="text" id="gw_3" name="gw_3" size="3"></td></tr>
+<tr><td align="center" colspan="2">MQTT DATA:</td></tr>
+<tr><td align="right">MQTT server:</td><td><input type="text" id="mqtt_server" name="mqtt_server" value=""></td></tr>
+<tr><td align="right">MQTT port:</td><td><input type="text" id="mqtt_port" name="mqtt_port" value=""></td></tr>
+<tr><td align="right">MQTT username:</td><td><input type="text" id="mqtt_username" name="mqtt_username"></td></tr>
+<tr><td align="right">MQTT password:</td><td><input type="text" id="mqtt_password" name="mqtt_password" ></td></tr>
+<tr><td align="right">MQTT prefix:</td><td><input type="text" id="mqtt_prefix" name="mqtt_prefix" ></td></tr>
 <tr><td colspan="2" align="center"><input type="submit" style="width:150px" class="btn btn--m btn--blue" value="Save"></td></tr>
 </table>
 </form>
@@ -28,7 +34,17 @@ Connect to Router with these settings:<br>
 <tr><td><div id="networks">Scanning...</div></td></tr>
 <tr><td align="center"><a href="javascript:GetState()" style="width:150px" class="btn btn--m btn--blue">Refresh</a></td></tr>
 </table>
+<!-- MQTT settings  -->
+<!-- <hr>
+MQTT settings:<br>
+<form name="MQTT_form" action="" method="get">
+<table border="0"  cellspacing="0" cellpadding="3" style="width:310px" >
 
+
+<tr><td colspan="2" align="center"><input type="submit" style="width:150px" class="btn btn--m btn--blue" value="Save"></td></tr>
+</table>
+</form>
+-->
 
 <script>
 
@@ -108,6 +124,13 @@ void send_network_configuration_html()
 			if (server.argName(i) == "gw_2") if (checkRange(server.arg(i))) 	config.Gateway[2] =  server.arg(i).toInt();
 			if (server.argName(i) == "gw_3") if (checkRange(server.arg(i))) 	config.Gateway[3] =  server.arg(i).toInt();
 			if (server.argName(i) == "dhcp") config.dhcp = true;
+			//mqtt data
+			if (server.argName(i) == "mqtt_server") config.mqtt_server =   urldecode(server.arg(i));
+			if (server.argName(i) == "mqtt_port") config.mqtt_port =   urldecode(server.arg(i));
+			if (server.argName(i) == "mqtt_username") config.mqtt_username =   urldecode(server.arg(i));
+			if (server.argName(i) == "mqtt_password") config.mqtt_password =   urldecode(server.arg(i));
+			if (server.argName(i) == "mqtt_prefix") config.mqtt_prefix =   urldecode(server.arg(i));
+			
 		}
 		 server.send_P ( 200, "text/html", PAGE_WaitAndReload );
 		WriteConfig();
@@ -150,6 +173,13 @@ void send_network_configuration_values_html()
 	values += "gw_2|" +  (String) config.Gateway[2] + "|input\n";
 	values += "gw_3|" +  (String) config.Gateway[3] + "|input\n";
 	values += "dhcp|" +  (String) (config.dhcp ? "checked" : "") + "|chk\n";
+	//mqtt data
+	values += "mqtt_server|" +  (String) config.mqtt_server + "|input\n";
+	values += "mqtt_port|" +  (String) config.mqtt_port + "|input\n";
+	values += "mqtt_username|" +  (String) config.mqtt_username + "|input\n";
+	values += "mqtt_password|" +  (String) config.mqtt_password + "|input\n";
+	values += "mqtt_prefix|" +  (String) config.mqtt_prefix + "|input\n";
+			
 	server.send ( 200, "text/plain", values);
 	ECHO_MSG(__FUNCTION__);
 
