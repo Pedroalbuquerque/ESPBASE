@@ -86,7 +86,6 @@ public:
 #include "Page_Information.h"
 #include "Page_General.h"
 #include "Page_NetworkConfiguration.h"
-#include "Page_Pwd.h"
 
 
 //char tmpESP[100];
@@ -229,8 +228,6 @@ void ESPBASE::httpSetup(){
   server.on ( "/ntp.html", send_NTP_configuration_html  );
 
   //server.on ( "/appl.html", send_application_configuration_html  );
-  server.on ( "/pwd.html", send_password_html);
-  server.on( "/pwdvalues", send_password_configuration_values_html);
   server.on ( "/general.html", send_general_html  );
   //  server.on ( "/example.html", []() { server.send_P ( 200, "text/html", PAGE_EXAMPLE );  } );
   server.on ( "/style.css", []() {
