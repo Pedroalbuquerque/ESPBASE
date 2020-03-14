@@ -63,7 +63,6 @@ struct strConfig {
     EEPROM.putString("OTApwd", config.OTApwd);
     EEPROM.putString("CFGpwd", config.CFGpwd);
 
-
   }
   boolean ReadConfig(){
     ECHO_MSG("Reading Configuration\n");

@@ -66,6 +66,7 @@ void send_general_html()
 	{
 		String temp = "";
 		for ( uint8_t i = 0; i < server.args(); i++ ) {
+			DEBUG_MSG("[send_general_html] %s\t arg:%s::%s\n",server.uri(), server.argName(i),server.arg(i));
 			if (server.argName(i) == "devicename") config.DeviceName = urldecode(server.arg(i));
             if (server.argName(i) == "OTApwd") {
 				if(strlen(urldecode(server.arg(i)).c_str()) >=8)
@@ -84,7 +85,19 @@ void send_general_html()
 		firstStart = true;
 		ESP.restart();
 	}
-	server.send_P ( 200, "text/html", PAGE_AdminGeneralSettings );
+	
+	//uint8_t count = 3;
+	
+	if (!server.authenticate("admin", config.CFGpwd.c_str()))  {
+		server.requestAuthentication();
+	 }
+	else{
+		server.send_P ( 200, "text/html", PAGE_AdminGeneralSettings );
+	 }
+	
+	server.send ( 400, "text/html", "Authentication failed" );
+	
+
 	ECHO_MSG(__FUNCTION__);
 
 
