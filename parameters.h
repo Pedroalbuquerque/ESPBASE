@@ -3,20 +3,21 @@
 #define PARAMETERS_H
 
 struct strConfig {
-  boolean dhcp;                         // 1 Byte - EEPROM 16
+  boolean dhcp;                         // 1 Byte - EEPROM 16  // from 0-15 reserved, so start on 16
   boolean isDayLightSaving;             // 1 Byte - EEPROM 17
   long Update_Time_Via_NTP_Every;       // 4 Byte - EEPROM 18
   long timeZone;                        // 4 Byte - EEPROM 22
-  byte  IP[4];                          // 4 Byte - EEPROM 32
-  byte  Netmask[4];                     // 4 Byte - EEPROM 36
-  byte  Gateway[4];                     // 4 Byte - EEPROM 40
-  String ssid;                          // up to 32 Byte - EEPROM 64
-  String password;                      // up to 32 Byte - EEPROM 96
-  String ntpServerName;                 // up to 32 Byte - EEPROM 128
-  String DeviceName;                    // up to 32 Byte - EEPROM 160
-  String OTApwd;                         // up to 32 Byte - EEPROM 192
+  byte  IP[4];                          // 4 Byte - EEPROM 26 //32 // error addr jump ??
+  byte  Netmask[4];                     // 4 Byte - EEPROM 30 //36
+  byte  Gateway[4];                     // 4 Byte - EEPROM 34 //40
+  String ssid;                          // up to 32 Byte - EEPROM 38 //64
+  String password;                      // up to 32 Byte - EEPROM 70 //96
+  String ntpServerName;                 // up to 32 Byte - EEPROM 102 //128
+  String DeviceName;                    // up to 32 Byte - EEPROM 134 //160
+  String OTApwd;                        // up to 32 Byte - EEPROM 166 //192
+  String CFGpwd;                        // up to 32 Byte - EEPROM 198 - 220 
 
-  // Application Settings here... from EEPROM 224 up to 511 (0 - 511)
+  // Application Settings here... from EEPROM 220 - 511 // 224 up to 511 (0 - 511)
 
 } config;
 
@@ -60,6 +61,7 @@ struct strConfig {
     EEPROM.putString("ntpSN", config.ntpServerName);
     EEPROM.putString("DevN", config.DeviceName);
     EEPROM.putString("OTApwd", config.OTApwd);
+    EEPROM.putString("CFGpwd", config.CFGpwd);
 
 
   }
@@ -89,6 +91,7 @@ struct strConfig {
       config.ntpServerName = EEPROM.getString("ntpSN");
       config.DeviceName = EEPROM.getString("DevN");
       config.OTApwd = EEPROM.getString("OTApwd");
+      config.CFGpwd = EEPROM.getString("CFGpwd");
 
       // Application parameters here ... from EEPROM 192 to 511
 
@@ -170,26 +173,27 @@ struct strConfig {
     EEPROMWritelong(18, config.Update_Time_Via_NTP_Every); // 4 Byte
     EEPROMWritelong(22, config.timeZone); // 4 Byte
 
-    EEPROM.write(32, config.IP[0]);
-    EEPROM.write(33, config.IP[1]);
-    EEPROM.write(34, config.IP[2]);
-    EEPROM.write(35, config.IP[3]);
+    EEPROM.write(26, config.IP[0]);
+    EEPROM.write(27, config.IP[1]);
+    EEPROM.write(28, config.IP[2]);
+    EEPROM.write(29, config.IP[3]);
 
-    EEPROM.write(36, config.Netmask[0]);
-    EEPROM.write(37, config.Netmask[1]);
-    EEPROM.write(38, config.Netmask[2]);
-    EEPROM.write(39, config.Netmask[3]);
+    EEPROM.write(30, config.Netmask[0]);
+    EEPROM.write(31, config.Netmask[1]);
+    EEPROM.write(32, config.Netmask[2]);
+    EEPROM.write(33, config.Netmask[3]);
 
-    EEPROM.write(40, config.Gateway[0]);
-    EEPROM.write(41, config.Gateway[1]);
-    EEPROM.write(42, config.Gateway[2]);
-    EEPROM.write(43, config.Gateway[3]);
+    EEPROM.write(34, config.Gateway[0]);
+    EEPROM.write(35, config.Gateway[1]);
+    EEPROM.write(36, config.Gateway[2]);
+    EEPROM.write(37, config.Gateway[3]);
 
-    WriteStringToEEPROM(64, config.ssid);
-    WriteStringToEEPROM(96, config.password);
-    WriteStringToEEPROM(128, config.ntpServerName);
-    WriteStringToEEPROM(160, config.DeviceName);
-    WriteStringToEEPROM(192, config.OTApwd);
+    WriteStringToEEPROM(38, config.ssid);
+    WriteStringToEEPROM(70, config.password);
+    WriteStringToEEPROM(102, config.ntpServerName);
+    WriteStringToEEPROM(134, config.DeviceName);
+    WriteStringToEEPROM(166, config.OTApwd);
+    WriteStringToEEPROM(198, config.CFGpwd);
 
       // Application Settings here... from EEPROM 192 up to 511 (0 - 511)
 
@@ -206,25 +210,26 @@ struct strConfig {
       config.isDayLightSaving = EEPROM.read(17);
       config.Update_Time_Via_NTP_Every = EEPROMReadlong(18); // 4 Byte
       config.timeZone = EEPROMReadlong(22); // 4 Byte
-      config.IP[0] = EEPROM.read(32);
-      config.IP[1] = EEPROM.read(33);
-      config.IP[2] = EEPROM.read(34);
-      config.IP[3] = EEPROM.read(35);
-      config.Netmask[0] = EEPROM.read(36);
-      config.Netmask[1] = EEPROM.read(37);
-      config.Netmask[2] = EEPROM.read(38);
-      config.Netmask[3] = EEPROM.read(39);
-      config.Gateway[0] = EEPROM.read(40);
-      config.Gateway[1] = EEPROM.read(41);
-      config.Gateway[2] = EEPROM.read(42);
-      config.Gateway[3] = EEPROM.read(43);
-      config.ssid = ReadStringFromEEPROM(64);
-      config.password = ReadStringFromEEPROM(96);
-      config.ntpServerName = ReadStringFromEEPROM(128);
-      config.DeviceName = ReadStringFromEEPROM(160);
-      config.OTApwd = ReadStringFromEEPROM(192);
+      config.IP[0] = EEPROM.read(26);
+      config.IP[1] = EEPROM.read(27);
+      config.IP[2] = EEPROM.read(28);
+      config.IP[3] = EEPROM.read(29);
+      config.Netmask[0] = EEPROM.read(30);
+      config.Netmask[1] = EEPROM.read(31);
+      config.Netmask[2] = EEPROM.read(32);
+      config.Netmask[3] = EEPROM.read(33);
+      config.Gateway[0] = EEPROM.read(34);
+      config.Gateway[1] = EEPROM.read(35);
+      config.Gateway[2] = EEPROM.read(36);
+      config.Gateway[3] = EEPROM.read(37);
+      config.ssid = ReadStringFromEEPROM(38);
+      config.password = ReadStringFromEEPROM(70);
+      config.ntpServerName = ReadStringFromEEPROM(102);
+      config.DeviceName = ReadStringFromEEPROM(134);
+      config.OTApwd = ReadStringFromEEPROM(166);
+      config.CFGpwd = ReadStringFromEEPROM(198);
 
-      // Application parameters here ... from EEPROM 192 to 511
+      // Application parameters here ... from EEPROM 220 to 511
 
       return true;
 
@@ -259,6 +264,7 @@ void printConfig(){
   ECHO_MSG("ntp ServerName:%s\n", config.ntpServerName.c_str());
   ECHO_MSG("Device Name:%s\n", config.DeviceName.c_str());
   ECHO_MSG("OTA password:%s\n", config.OTApwd.c_str());
+  ECHO_MSG("CFG password:%s\n", config.CFGpwd.c_str());
 
     // Application Settings here... from EEPROM 192 up to 511 (0 - 511)
 
@@ -282,6 +288,7 @@ void configLoadDefaults(uint16_t ChipId){
   config.isDayLightSaving = true;
   config.DeviceName = "Not Named";
   config.OTApwd = "";
+  config.CFGpwd = "";
 
   return;
 

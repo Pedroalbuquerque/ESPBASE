@@ -17,6 +17,10 @@ const char PAGE_AdminGeneralSettings[] PROGMEM =  R"=====(
 <td align="right">OTA Password</td>
 <td><input type="text" id="OTApwd" name="OTApwd" value=""></td>
 </tr>
+<tr>
+<td align="right">CFG Password</td>
+<td><input type="text" id="CFGpwd" name="CFGpwd" value=""></td>
+</tr>
 <tr><td colspan="2" align="center"><input type="submit" style="width:150px" class="btn btn--m btn--blue" value="Save"></td></tr>
 </table>
 </form>
@@ -43,6 +47,7 @@ function load(e,t,n){if("js"==t){var a=document.createElement("script");a.src=e,
 
 
 // Functions for this Page
+/*
 void send_devicename_value_html()
 {
 
@@ -53,7 +58,7 @@ void send_devicename_value_html()
 	ECHO_MSG(__FUNCTION__);
 
 }
-
+*/
 void send_general_html()
 {
 
@@ -67,6 +72,12 @@ void send_general_html()
 					config.OTApwd = urldecode(server.arg(i));
 				else
 					config.OTApwd = "";
+			}
+            if (server.argName(i) == "CFGpwd") {
+				if(strlen(urldecode(server.arg(i)).c_str()) >=8)
+					config.CFGpwd = urldecode(server.arg(i));
+				else
+					config.CFGpwd = "";
 			}
 		}
 		WriteConfig();
@@ -84,6 +95,7 @@ void send_general_configuration_values_html()
 	String values ="";
 	values += "devicename|" +  (String)  config.DeviceName +  "|input\n";
     values += "OTApwd|" +  (String)  config.OTApwd +  "|input\n";
+    values += "CFGpwd|" +  (String)  config.CFGpwd +  "|input\n";
 
 	server.send ( 200, "text/plain", values);
 	ECHO_MSG(__FUNCTION__);

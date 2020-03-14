@@ -54,8 +54,24 @@ Assuming ESP 32 environment has already been installed you will need:
 - Ticker-ESP32 (https://github.com/Pedroalbuquerque/Ticker-ESP32)
 - ESP32PWM (https://github.com/Pedroalbuquerque/ESP32PWM)
 
+## EEPROM Use
+This framework assumes the use o EEPROM to store base configuration .
+for ESP8266 the EEPROM size is predefined to 512Bytes and on ESP32 this library declare EEPROM with 512Byte size to keep compatibility t ESP8266
 
+### ESP8266
+on ESP8266 the EEPROM is accessed via memory address and EEPROM mapping is:
+0         "C" // C character
+1         "F" // F character
+2         "G" // G character
+3-15      (not used)
+16-223    config parameters
+224-511   (free)
 
+### ESP32
+on ESP 32 EEPROM is access via keyword instead for address so EEPROM mapping is:
+3 bytes for "CFG" string
+208 bytes used by config parameters
+301 bytes free
 
 Hope you can find this interesting and useful.
 

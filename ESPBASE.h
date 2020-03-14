@@ -244,7 +244,7 @@ void ESPBASE::httpSetup(){
   server.on ( "/admin/ntpvalues", send_NTP_configuration_values_html );
   //server.on ( "/admin/applvalues", send_application_configuration_values_html );
   server.on ( "/admin/generalvalues", send_general_configuration_values_html);
-  server.on ( "/admin/devicename",     send_devicename_value_html);
+  //server.on ( "/admin/devicename",     send_devicename_value_html);
   server.onNotFound ( []() {
     ECHO_MSG("Page Not Found\n");
     server.send ( 400, "text/html", "Page not Found" );
