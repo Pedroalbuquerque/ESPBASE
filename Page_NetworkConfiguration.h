@@ -109,7 +109,8 @@ void send_network_configuration_html()
 			if (server.argName(i) == "gw_3") if (checkRange(server.arg(i))) 	config.Gateway[3] =  server.arg(i).toInt();
 			if (server.argName(i) == "dhcp") config.dhcp = true;
 		}
-		 server.send_P ( 200, "text/html", PAGE_WaitAndReload );
+		
+		server.send_P ( 200, "text/html", PAGE_WaitAndReload );
 		WriteConfig();
         ECHO_MSG("Configuration Saved!!!!");
 

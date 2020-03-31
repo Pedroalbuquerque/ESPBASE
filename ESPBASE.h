@@ -37,6 +37,7 @@
     #include <ESP32WebServer.h>
     #include <HTTPClient.h>
     #include <WiFi.h>
+    #include <esp_wifi.h>
     #include <ESPmDNS.h>
     #include <WiFiUdp.h>
     #include <ArduinoOTA.h>
@@ -58,6 +59,9 @@
   #warning NO Board defined
 #endif
 
+
+
+
 extern WiFiClient Telnet;
 
 
@@ -70,6 +74,8 @@ public:
     void OTASetup();
     void WiFiconnect(uint8_t asStation);
     void WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bssid);
+    bool setWifiPower( float wifiPower); // -1,2,5,7,8.5,11,13,15,17,18.5,19,19.5
+    void setWifiProtocol ( uint8_t protocol ,wifi_interface_t current_wifi_interface);
 };
 
 #include "parameters.h"
@@ -123,6 +129,29 @@ void ESPBASE::initialize(uint8_t asStation, int32_t channel , const uint8_t *bss
 
 }
 
+bool ESPBASE::setWifiPower(float power)// -1,2,5,7,8.5,11,13,15,17,18.5,19,19.5 dbm
+{ 
+
+  // set Wifi mode and power
+  #ifdef ESP8266
+    return WiFi.setOutputPower(power);
+  #elif defined(ESP32)
+    return WiFi.setTxPower((wifi_power_t)(power *4));
+  #endif
+}
+
+void ESPBASE::setWifiProtocol(uint8_t protocol, wifi_interface_t current_wifi_interface ){
+    // set Wifi mode and power
+  #ifdef ESP8266
+    WiFi.setPhyMode( protocol); //set 802.11b mode to increase range
+  #elif defined(ESP32)
+    tcpip_adapter_get_esp_if(&current_wifi_interface);
+    esp_wifi_set_protocol( current_wifi_interface, protocol);
+  #endif
+
+}
+
+
 void ESPBASE::WiFiconnect(uint8_t asStation = true){
 
   WiFiconnect( asStation, 0 , (const uint8_t *)__null);
@@ -148,7 +177,7 @@ void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bs
     asStation = false;
   }
 
-  // is asStaion try to connect and return on sucess
+  // is asStation try to connect and return on sucess
   if(asStation){
 
     if(!WiFi.isConnected() ){ // if not connected
@@ -201,7 +230,7 @@ void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bs
   WiFi.mode(WIFI_OFF);
   WiFi.mode(WIFI_AP);
   String ssidAP = config.DeviceName + String(getChipId(),HEX);
-  DEBUG_MSG("AP start:%d\n",WiFi.softAP(ssidAP.c_str(),config.OTApwd.c_str()));
+  DEBUG_MSG("AP start:%d\n",WiFi.softAP(ssidAP.c_str(),config.WIFIpwd.c_str()));
   ECHO_MSG("AP:%s\n",ssidAP.c_str());
   ECHO_MSG("Wifi ip:");ECHO_PORT.println(WiFi.softAPIP());
 

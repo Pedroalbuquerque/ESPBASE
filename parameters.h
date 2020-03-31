@@ -15,9 +15,10 @@ struct strConfig {
   String ntpServerName;                 // up to 32 Byte - EEPROM 102 //128
   String DeviceName;                    // up to 32 Byte - EEPROM 134 //160
   String OTApwd;                        // up to 32 Byte - EEPROM 166 //192
-  String CFGpwd;                        // up to 32 Byte - EEPROM 198 - 220 
+  String CFGpwd;                        // up to 32 Byte - EEPROM 198 
+  String WIFIpwd;                       // up to 32 Byte - EEPROM 220 - 251
 
-  // Application Settings here... from EEPROM 220 - 511 // 224 up to 511 (0 - 511)
+  // Application Settings here... from EEPROM 252 - 511 // (0 - 511)
 
 } config;
 
@@ -62,6 +63,7 @@ struct strConfig {
     EEPROM.putString("DevN", config.DeviceName);
     EEPROM.putString("OTApwd", config.OTApwd);
     EEPROM.putString("CFGpwd", config.CFGpwd);
+    EEPROM.putString("WIFIpwd", config.WIFIpwd);
 
   }
   boolean ReadConfig(){
@@ -91,6 +93,7 @@ struct strConfig {
       config.DeviceName = EEPROM.getString("DevN");
       config.OTApwd = EEPROM.getString("OTApwd");
       config.CFGpwd = EEPROM.getString("CFGpwd");
+      config.WIFIpwd = EEPROM.getString("WIFIpwd");
 
       // Application parameters here ... from EEPROM 192 to 511
 
@@ -193,8 +196,9 @@ struct strConfig {
     WriteStringToEEPROM(134, config.DeviceName);
     WriteStringToEEPROM(166, config.OTApwd);
     WriteStringToEEPROM(198, config.CFGpwd);
+    WriteStringToEEPROM(220, config.WIFIpwd);
 
-      // Application Settings here... from EEPROM 192 up to 511 (0 - 511)
+      // Application Settings here... from EEPROM 252 up to 511 (0 - 511)
 
     EEPROM.commit();
 
@@ -227,8 +231,9 @@ struct strConfig {
       config.DeviceName = ReadStringFromEEPROM(134);
       config.OTApwd = ReadStringFromEEPROM(166);
       config.CFGpwd = ReadStringFromEEPROM(198);
+      config.WIFIpwd = ReadStringFromEEPROM(220);
 
-      // Application parameters here ... from EEPROM 220 to 511
+      // Application parameters here ... from EEPROM 252 to 511
 
       return true;
 
@@ -264,6 +269,7 @@ void printConfig(){
   ECHO_MSG("Device Name:%s\n", config.DeviceName.c_str());
   ECHO_MSG("OTA password:%s\n", config.OTApwd.c_str());
   ECHO_MSG("CFG password:%s\n", config.CFGpwd.c_str());
+  ECHO_MSG("WIFI password:%s\n", config.WIFIpwd.c_str());
 
     // Application Settings here... from EEPROM 192 up to 511 (0 - 511)
 
@@ -288,6 +294,7 @@ void configLoadDefaults(uint16_t ChipId){
   config.DeviceName = "Not Named";
   config.OTApwd = "";
   config.CFGpwd = "";
+  config.WIFIpwd = "";
 
   return;
 

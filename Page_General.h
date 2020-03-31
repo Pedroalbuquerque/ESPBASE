@@ -21,6 +21,10 @@ const char PAGE_AdminGeneralSettings[] PROGMEM =  R"=====(
 <td align="right">CFG Password</td>
 <td><input type="text" id="CFGpwd" name="CFGpwd" value=""></td>
 </tr>
+<tr>
+<td align="right">WiFi Password</td>
+<td><input type="text" id="WIFIpwd" name="WIFIpwd" value=""></td>
+</tr>
 <tr><td colspan="2" align="center"><input type="submit" style="width:150px" class="btn btn--m btn--blue" value="Save"></td></tr>
 </table>
 </form>
@@ -66,7 +70,7 @@ void send_general_html()
 	{
 		String temp = "";
 		for ( uint8_t i = 0; i < server.args(); i++ ) {
-			DEBUG_MSG("[send_general_html] %s\t arg:%s::%s\n",server.uri(), server.argName(i),server.arg(i));
+			DEBUG_MSG("[send_general_html] %s\t arg:%s::%s\n",server.uri().c_str(), server.argName(i).c_str(),server.arg(i).c_str());
 			if (server.argName(i) == "devicename") config.DeviceName = urldecode(server.arg(i));
             if (server.argName(i) == "OTApwd") {
 				if(strlen(urldecode(server.arg(i)).c_str()) >=8)
@@ -80,6 +84,13 @@ void send_general_html()
 				else
 					config.CFGpwd = "";
 			}
+            if (server.argName(i) == "WIFIpwd") {
+				if(strlen(urldecode(server.arg(i)).c_str()) >=8)
+					config.WIFIpwd = urldecode(server.arg(i));
+				else
+					config.WIFIpwd = "";
+			}
+
 		}
 		WriteConfig();
 		firstStart = true;
@@ -88,7 +99,7 @@ void send_general_html()
 	
 	//uint8_t count = 3;
 	
-	if (!server.authenticate("admin", config.CFGpwd.c_str()))  {
+	if (!server.authenticate("", config.CFGpwd.c_str()))  {
 		server.requestAuthentication();
 	 }
 	else{
@@ -109,6 +120,7 @@ void send_general_configuration_values_html()
 	values += "devicename|" +  (String)  config.DeviceName +  "|input\n";
     values += "OTApwd|" +  (String)  config.OTApwd +  "|input\n";
     values += "CFGpwd|" +  (String)  config.CFGpwd +  "|input\n";
+    values += "WIFIpwd|" +  (String)  config.WIFIpwd +  "|input\n";
 
 	server.send ( 200, "text/plain", values);
 	ECHO_MSG(__FUNCTION__);
