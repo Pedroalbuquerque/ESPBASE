@@ -67,15 +67,34 @@ extern WiFiClient Telnet;
 
 class ESPBASE {
 public:
-    bool WIFI_connected, CFG_saved;
-    void initialize(uint8_t asStation);
+    bool WIFI_connected, CFG_saved ;
+    uint8_t forceDefaults; // if true, wifi defaults are used even if saved mandatory in case saved parameter structure has changed
+    void initialize(uint8_t asStation, uint8_t forceDefaults = false);
     void initialize(uint8_t asStation, int32_t channel , const uint8_t *bssid);
     void httpSetup();
     void OTASetup();
     void WiFiconnect(uint8_t asStation);
     void WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bssid);
     bool setWifiPower( float wifiPower); // -1,2,5,7,8.5,11,13,15,17,18.5,19,19.5
+     /*
+    for ESP 32 use this
+    #define WIFI_PROTOCOL_11B         1
+    #define WIFI_PROTOCOL_11G         2
+    #define WIFI_PROTOCOL_11N         4
+    #define WIFI_PROTOCOL_LR          8
+
+    for esp8266 use this
+    typedef enum WiFiPhyMode
+    {
+        WIFI_PHY_MODE_11B = 1, WIFI_PHY_MODE_11G = 2, WIFI_PHY_MODE_11N = 3
+    } WiFiPhyMode_t;
+
+    */
+    #ifdef ESP32
     void setWifiProtocol ( uint8_t protocol ,wifi_interface_t current_wifi_interface);
+    #elif defined(ESP8266)
+    void setWifiProtocol ( uint8_t protocol );
+    #endif
 };
 
 #include "parameters.h"
@@ -96,7 +115,8 @@ public:
 
 //char tmpESP[100];
 
-void ESPBASE::initialize( uint8_t asStation = true){
+void ESPBASE::initialize( uint8_t asStation = true, uint8_t _forceDefaults){
+  forceDefaults = _forceDefaults;
   initialize( asStation, 0 , (const uint8_t *)__null);
 }
 void ESPBASE::initialize(uint8_t asStation, int32_t channel , const uint8_t *bssid){
@@ -134,22 +154,27 @@ bool ESPBASE::setWifiPower(float power)// -1,2,5,7,8.5,11,13,15,17,18.5,19,19.5 
 
   // set Wifi mode and power
   #ifdef ESP8266
-    return WiFi.setOutputPower(power);
+    WiFi.setOutputPower(power);
+    return true;
   #elif defined(ESP32)
     return WiFi.setTxPower((wifi_power_t)(power *4));
   #endif
 }
 
+#ifdef ESP8266
+void ESPBASE::setWifiProtocol(uint8_t protocol ){ //wifi.PHYMODE_B,wifi.PHYMODE_G,wifi.PHYMODE_N
+    // set Wifi mode and power
+    WiFi.setPhyMode( (WiFiPhyMode_t) protocol); //set 802.11b mode to increase range
+}
+#endif
+
+#ifdef ESP32
 void ESPBASE::setWifiProtocol(uint8_t protocol, wifi_interface_t current_wifi_interface ){
     // set Wifi mode and power
-  #ifdef ESP8266
-    WiFi.setPhyMode( protocol); //set 802.11b mode to increase range
-  #elif defined(ESP32)
     tcpip_adapter_get_esp_if(&current_wifi_interface);
     esp_wifi_set_protocol( current_wifi_interface, protocol);
-  #endif
-
 }
+#endif
 
 
 void ESPBASE::WiFiconnect(uint8_t asStation = true){
@@ -171,7 +196,7 @@ void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bs
 
   DEBUG_MSG("[ESPBASE] CFG_saved:%d\n",CFG_saved);
   
-  if(!CFG_saved){
+  if(!CFG_saved or forceDefaults){
     //load config with default values
     configLoadDefaults(getChipId());
     asStation = false;
