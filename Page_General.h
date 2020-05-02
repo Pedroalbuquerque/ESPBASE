@@ -50,19 +50,6 @@ function load(e,t,n){if("js"==t){var a=document.createElement("script");a.src=e,
 )=====";
 
 
-// Functions for this Page
-/*
-void send_devicename_value_html()
-{
-
-	String values ="";
-	values += "devicename|" + (String) config.DeviceName + "|div\n";
-    values += "OTApwd|" + (String) config.OTApwd + "|div\n";
-	server.send ( 200, "text/plain", values);
-	ECHO_MSG(__FUNCTION__);
-
-}
-*/
 void send_general_html()
 {
 
@@ -99,14 +86,16 @@ void send_general_html()
 	
 	//uint8_t count = 3;
 	
-	if (!server.authenticate("", config.CFGpwd.c_str()))  {
-		server.requestAuthentication();
+	if (!server.authenticate("admin", config.CFGpwd.c_str()))  {
+		server.requestAuthentication(BASIC_AUTH,__null,"Failed Authetication");
 	 }
 	else{
+		
 		server.send_P ( 200, "text/html", PAGE_AdminGeneralSettings );
 	 }
-	
-	server.send ( 400, "text/html", "Authentication failed" );
+
+	//server.send( 200, "text/html", PAGE_AdminGeneralSettings);
+	//server.send ( 400, "text/html", "Authentication failed" );
 	
 
 	ECHO_MSG(__FUNCTION__);
