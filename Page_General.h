@@ -87,7 +87,11 @@ void send_general_html()
 	//uint8_t count = 3;
 	
 	if (!server.authenticate("admin", config.CFGpwd.c_str()))  {
+		#ifdef ESP8266
 		server.requestAuthentication(BASIC_AUTH,__null,"Failed Authetication");
+		#elif defined(ESP32)
+		server.requestAuthentication();
+		#endif
 	 }
 	else{
 		

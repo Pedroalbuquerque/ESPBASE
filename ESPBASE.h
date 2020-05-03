@@ -193,8 +193,6 @@ void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bs
 
   //**** Network Config load
   CFG_saved = ReadConfig();
-
-  DEBUG_MSG("[ESPBASE] CFG_saved:%d\n",CFG_saved);
   
   if(!CFG_saved or forceDefaults){
     //load config with default values

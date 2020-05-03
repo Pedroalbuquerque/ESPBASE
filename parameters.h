@@ -67,7 +67,7 @@ struct strConfig {
 
   }
   boolean ReadConfig(){
-    ECHO_MSG("Reading Configuration\n");
+    ECHO_MSG("\nReading Configuration\n");
     if (EEPROM.getString("head") == "CFG" )
     {
       ECHO_MSG("Configurarion Found!\n");
@@ -205,7 +205,7 @@ struct strConfig {
   }
 
   boolean ReadConfig(){
-    ECHO_MSG("Reading Configuration\n");
+    ECHO_MSG("\nReading Configuration\n");
     if (EEPROM.read(0) == 'C' && EEPROM.read(1) == 'F'  && EEPROM.read(2) == 'G' )
     {
       ECHO_MSG("Configuration Found!\n");
