@@ -134,7 +134,7 @@ void loop() {
 
 
     //**** Normal Skecth code here ...
-    Telnet.print(".");
+    //Telnet.print(".");
 
     // put your main code here, to run repeatedly:
 
