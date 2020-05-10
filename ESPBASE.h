@@ -64,6 +64,12 @@
 
 extern WiFiClient Telnet;
 
+typedef struct {
+  uint32_t count; // number of AP on the channel
+  int32_t overload; // overload KPI = sum of RSSI of channel + 10% RSSI of adjacent channels (n-1, n+1)
+  String nameList; // list of AP on the channel
+} channel_t;
+
 
 class ESPBASE {
 public:
@@ -95,6 +101,8 @@ public:
     #elif defined(ESP8266)
     void setWifiProtocol ( uint8_t protocol );
     #endif
+    channel_t channelList[13]; // collect channel load with wifiScan
+    uint8_t getRecommendedChannel();
 };
 
 #include "parameters.h"
@@ -148,6 +156,47 @@ void ESPBASE::initialize(uint8_t asStation, int32_t channel , const uint8_t *bss
     ECHO_MSG("Ready\n");
 
 }
+
+uint8_t ESPBASE::getRecommendedChannel() // get least ocupied channel
+{  
+  uint8_t n = WiFi.scanNetworks();
+  uint32_t bestChannel = 0 ;  // channel with least number of AP
+  // clean SSIDlist array
+  for (uint8_t i = 0; i < 14 ; i ++ ){ 
+    channelList[i].count = 0;
+    channelList[i].overload = 0 ;
+    channelList[i].nameList = "";
+  }
+  
+  // load channelLoad array with new values
+  for (uint8_t i = 0; i < n ; i ++ ){
+    int32_t ovlKPI = 100+WiFi.RSSI(i);
+    channelList[ WiFi.channel(i)-1].count ++;
+    channelList[WiFi.channel(i)-1].overload += ovlKPI;
+    //DEBUG_MSG("[getRecommenedChannel] RSSI:%d\n",WiFi.RSSI(i));
+    if(i>1)  channelList[WiFi.channel(i)-2].overload += 0.1 * ovlKPI; // afect n-1 channel with overload factor
+    if(i<13) channelList[WiFi.channel(i)].overload += 0.1 * ovlKPI;   // afect n+1 channel with overload factor
+    channelList[ WiFi.channel(i)-1].nameList += ";" + String(WiFi.SSID(i));
+  }
+
+  // check channelList looking for overload = 0 
+  bestChannel = 1;
+  int32_t minOverload = 999999; //RSSI in dbm typicaly always negative
+  uint8_t tmpChIdx = 0;
+  while( channelList[tmpChIdx].overload > 0){ // find first channel with no AP
+    if(channelList[tmpChIdx].overload < minOverload){
+      bestChannel = tmpChIdx;
+      minOverload = channelList[tmpChIdx].overload;
+    }
+    //DEBUG_MSG("[best Channel check]channel:%d \toverload:%d\n",tmpChIdx+1,minOverload);
+    tmpChIdx++; 
+  }
+
+  bestChannel = tmpChIdx +1;
+  //DEBUG_MSG("[getRecommendedChannel] on exit bestChannel:%d\n",bestChannel)
+  return bestChannel;
+
+};
 
 bool ESPBASE::setWifiPower(float power)// -1,2,5,7,8.5,11,13,15,17,18.5,19,19.5 dbm
 { 
