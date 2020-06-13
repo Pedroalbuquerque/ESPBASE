@@ -75,9 +75,9 @@ class ESPBASE {
 public:
     bool WIFI_connected, CFG_saved ;
     uint8_t forceDefaults; // if true, wifi defaults are used even if saved mandatory in case saved parameter structure has changed
-    void initialize(uint8_t asStation, uint8_t forceDefaults = false);
-    void initialize(uint8_t asStation, int32_t channel , const uint8_t *bssid);
-    void httpSetup();
+    void initialize(uint8_t asStation, uint8_t forceDefaults = false, const char * adminroot = "/");
+    void initialize(uint8_t asStation, int32_t channel , const uint8_t *bssid, const char * adminroot);
+    void httpSetup( const char * adminroot = "/" );
     void OTASetup();
     void WiFiconnect(uint8_t asStation);
     void WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bssid);
@@ -99,7 +99,7 @@ public:
     #ifdef ESP32
     void setWifiProtocol ( uint8_t protocol ,wifi_interface_t current_wifi_interface);
     #elif defined(ESP8266)
-    void setWifiProtocol ( uint8_t protocol );
+    void setWifiProtocol ( uint8_t protocol );//WIFI_PHY_MODE_11B = 1, WIFI_PHY_MODE_11G = 2, WIFI_PHY_MODE_11N = 3
     #endif
     channel_t channelList[13]; // collect channel load with wifiScan
     uint8_t getRecommendedChannel();
@@ -123,11 +123,11 @@ public:
 
 //char tmpESP[100];
 
-void ESPBASE::initialize( uint8_t asStation = true, uint8_t _forceDefaults){
+void ESPBASE::initialize( uint8_t asStation = true, uint8_t _forceDefaults, const char * adminroot){
   forceDefaults = _forceDefaults;
-  initialize( asStation, 0 , (const uint8_t *)__null);
+  initialize( asStation, 0 , (const uint8_t *)__null, adminroot);
 }
-void ESPBASE::initialize(uint8_t asStation, int32_t channel , const uint8_t *bssid){
+void ESPBASE::initialize(uint8_t asStation, int32_t channel , const uint8_t *bssid, const char * adminroot){
 
     //  Wifi connect to an AP or start as a AP
     //if (asStation)
@@ -137,7 +137,7 @@ void ESPBASE::initialize(uint8_t asStation, int32_t channel , const uint8_t *bss
     //  Http Setup
 
     yield();
-    httpSetup();
+    httpSetup(adminroot);
     ECHO_MSG("HTTP setup complete!\n");
 
     // ***********  OTA SETUP
@@ -211,8 +211,8 @@ bool ESPBASE::setWifiPower(float power)// -1,2,5,7,8.5,11,13,15,17,18.5,19,19.5 
 }
 
 #ifdef ESP8266
-void ESPBASE::setWifiProtocol(uint8_t protocol ){ //wifi.PHYMODE_B,wifi.PHYMODE_G,wifi.PHYMODE_N
-    // set Wifi mode and power
+void ESPBASE::setWifiProtocol(uint8_t protocol ) //wifi.PHYMODE_B,wifi.PHYMODE_G,wifi.PHYMODE_N
+{    // set Wifi mode and power
     WiFi.setPhyMode( (WiFiPhyMode_t) protocol); //set 802.11b mode to increase range
 }
 #endif
@@ -245,6 +245,7 @@ void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bs
   
   if(!CFG_saved or forceDefaults){
     //load config with default values
+    ECHO_MSG("Loading defaults\n");
     configLoadDefaults(getChipId());
     asStation = false;
   }
@@ -296,22 +297,23 @@ void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bs
   // Start as AP if failed or not asStation
 
   // DEFAULT CONFIG
-  ECHO_MSG("Setting AP mode default parameters\n");
+  ECHO_MSG("Setting AP mode\n");
 
   WiFi.disconnect(); // just to be sure ...
   WiFi.mode(WIFI_OFF);
   WiFi.mode(WIFI_AP);
   String ssidAP = config.DeviceName + String(getChipId(),HEX);
-  DEBUG_MSG("AP start:%d\n",WiFi.softAP(ssidAP.c_str(),config.WIFIpwd.c_str()));
+  uint8_t sucess = WiFi.softAP(ssidAP.c_str(),config.WIFIpwd.c_str());
+  DEBUG_MSG("AP start:%d\n",sucess);
   ECHO_MSG("AP:%s\n",ssidAP.c_str());
   ECHO_MSG("Wifi ip:");ECHO_PORT.println(WiFi.softAPIP());
 
   return;
 }
 
-void ESPBASE::httpSetup(){
+void ESPBASE::httpSetup( const char * adminroot ){
   // Start HTTP Server for configuration
-  server.on ( "/", []() {
+  server.on ( adminroot, []() {
     ECHO_MSG("admin.html\n");
     server.send_P ( 200, "text/html", PAGE_AdminMainPage);  // const char top of page
   }  );
