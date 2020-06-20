@@ -27,7 +27,7 @@ ESPBASE Esp;
     DEBUG_MSG("\n[Wifi AP] Client Connected\n");
   }
 
-  void onAPclietDisconnected(const WiFiEventSoftAPModeStationDisconnected& evt) {
+  void onAPclientDisconnected(const WiFiEventSoftAPModeStationDisconnected& evt) {
     //Serial.print("Station connected: ");
     //Serial.println(macToString(evt.mac));
     DEBUG_MSG("\n[Wifi AP] Client Disconnected   >>>>  #######  <<<<<< \n");
