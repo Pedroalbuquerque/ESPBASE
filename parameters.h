@@ -3,6 +3,7 @@
 #define PARAMETERS_H
 
 struct strConfig {
+  //uint32_t crc;                    
   boolean dhcp;                         // 1 Byte - EEPROM 16  // from 0-15 reserved, so start on 16
   boolean isDayLightSaving;             // 1 Byte - EEPROM 17
   long Update_Time_Via_NTP_Every;       // 4 Byte - EEPROM 18
@@ -17,7 +18,9 @@ struct strConfig {
   String OTApwd;                        // up to 32 Byte - EEPROM 166 //192
   String CFGpwd;                        // up to 32 Byte - EEPROM 198 
   String WIFIpwd;                       // up to 32 Byte - EEPROM 220 - 251
-
+  //String mqttServer;                    // up to 16 Byte
+  //String mqttUser;                      // up to 32 Byte
+  //String mqttPwd;                       // up to 16 Byte
   // Application Settings here... from EEPROM 252 - 511 // (0 - 511)
 
 } config;

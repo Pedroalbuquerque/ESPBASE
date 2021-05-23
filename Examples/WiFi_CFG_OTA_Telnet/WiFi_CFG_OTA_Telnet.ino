@@ -134,8 +134,11 @@ void loop() {
 
 
     //**** Normal Skecth code here ...
-    //Telnet.print(".");
-
+    static uint32_t tmpTimer = millis();
+    if(millis() > tmpTimer){
+      tmpTimer += 1000;
+      Telnet.print(".");
+    }
     // put your main code here, to run repeatedly:
 
     //blink a LED as an example

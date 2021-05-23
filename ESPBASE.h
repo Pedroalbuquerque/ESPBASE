@@ -52,6 +52,9 @@
   #include <ArduinoOTA.h>
   #include <Ticker.h>
   #include <EEPROM.h>
+
+  #define EEPROM_SIZE 512
+  
   extern "C" {
   #include "user_interface.h"
   }
@@ -76,7 +79,7 @@ public:
     bool WIFI_connected, CFG_saved ;
     uint8_t forceDefaults; // if true, wifi defaults are used even if saved mandatory in case saved parameter structure has changed
     void initialize(uint8_t asStation, uint8_t forceDefaults = false, const char * adminroot = "/");
-    void initialize(uint8_t asStation, int32_t channel , const uint8_t *bssid, const char * adminroot);
+    void initialize(uint8_t asStation, int32_t channel , const uint8_t *bssid, const char * adminroot = "/");
     void httpSetup( const char * adminroot = "/" );
     void OTASetup();
     void WiFiconnect(uint8_t asStation);
@@ -198,7 +201,8 @@ uint8_t ESPBASE::getRecommendedChannel() // get least ocupied channel
 
 };
 
-bool ESPBASE::setWifiPower(float power)// -1,2,5,7,8.5,11,13,15,17,18.5,19,19.5 dbm
+// ESP8266 : -1,2,5,7,8.5,11,13,15,17,18.5,19,19.5 dbm
+bool ESPBASE::setWifiPower(float power)
 { 
 
   // set Wifi mode and power
