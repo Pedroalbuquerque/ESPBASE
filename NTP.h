@@ -110,7 +110,7 @@ boolean getNTPtime(){
   {
     UDPNTPClient.begin(2390);  // Port for NTP receive
     IPAddress timeServerIP;
-    WiFi.hostByName(config.ntpServerName.c_str(), timeServerIP);
+    WiFi.hostByName(config.ntpServerName, timeServerIP);
     ECHO_MSG("[NTP] NTP server:%s\n",timeServerIP.toString().c_str());
 
     //ECHO_MSG("sending NTP packet...");

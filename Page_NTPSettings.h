@@ -78,7 +78,7 @@ void send_NTP_configuration_html()
     config.isDayLightSaving = false;
     String temp = "";
     for ( uint8_t i = 0; i < server.args(); i++ ) {
-      if (server.argName(i) == "ntpserver") config.ntpServerName = urldecode( server.arg(i));
+      if (server.argName(i) == "ntpserver") strcpy_cln(config.ntpServerName, urldecode( server.arg(i)).c_str(),sizeof(config.ntpServerName));
       if (server.argName(i) == "update") config.Update_Time_Via_NTP_Every =  server.arg(i).toInt();
       if (server.argName(i) == "tz") config.timeZone =  server.arg(i).toInt();
       if (server.argName(i) == "dst") config.isDayLightSaving = true;

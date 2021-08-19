@@ -30,7 +30,6 @@
 #include <string.h>
 #include <DebugTools.h>
 
-
 #if defined(ESP32)
     //ESP32 specific here
     #include <ESP32PWM.h>
@@ -255,7 +254,7 @@ void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bs
   }
 
   // is asStation try to connect and return on sucess
-  if(asStation){
+  if(asStation && config.connectToWifi){
 
     if(!WiFi.isConnected() ){ // if not connected
       WIFI_connected = false;
@@ -264,12 +263,11 @@ void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bs
 
       // Connect the ESP8266 to local WIFI network in Station mode
       // using SSID and password saved in parameters (config object)
-      ECHO_MSG("Booting");
-      //printConfig();
+      ECHO_MSG("Connecting to WiFi");
       WiFi.disconnect(); // just to be sure ...
       WiFi.mode(WIFI_OFF);
       WiFi.mode(WIFI_STA);
-      WiFi.begin(config.ssid.c_str(), config.password.c_str(), channel, bssid);
+      WiFi.begin(config.ssid, config.password, channel, bssid);
       //WIFI_connected = WiFi.waitForConnectResult();
       uint8_t timeoutClick = 50;
       while((WiFi.status()!= WL_CONNECTED) and --timeoutClick > 0) {
@@ -306,8 +304,8 @@ void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bs
   WiFi.disconnect(); // just to be sure ...
   WiFi.mode(WIFI_OFF);
   WiFi.mode(WIFI_AP);
-  String ssidAP = config.DeviceName + String(getChipId(),HEX);
-  uint8_t sucess = WiFi.softAP(ssidAP.c_str(),config.WIFIpwd.c_str());
+  String ssidAP = (String) config.DeviceName + String(getChipId(),HEX);
+  uint8_t sucess = WiFi.softAP(ssidAP.c_str(),config.WIFIpwd);
   DEBUG_MSG("AP start:%d\n",sucess);
   ECHO_MSG("AP:%s\n",ssidAP.c_str());
   ECHO_MSG("Wifi ip:");ECHO_PORT.println(WiFi.softAPIP());
@@ -396,7 +394,7 @@ void ESPBASE::OTASetup(){
         });
 
        /* setup the OTA server */
-      ArduinoOTA.setPassword(config.OTApwd.c_str());    // ********    to be implemented as a parameter via Browser
+      ArduinoOTA.setPassword(config.OTApwd);    // ********    to be implemented as a parameter via Browser
       ArduinoOTA.begin();
 
 }

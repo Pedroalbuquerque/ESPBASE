@@ -18,7 +18,7 @@
 void ConfigureWifi(){
   ECHO_MSG("Configuring Wifi\n");
   //WiFi.mode(WIFI_OFF);
-  WiFi.begin (config.ssid.c_str(), config.password.c_str());
+  WiFi.begin (config.ssid, config.password);
 
   while (WiFi.status() != WL_CONNECTED) {
     ECHO_MSG("WiFi not connected\n");

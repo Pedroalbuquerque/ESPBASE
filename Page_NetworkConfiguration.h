@@ -13,7 +13,9 @@ Connect to Router with these settings:<br>
 <table border="0"  cellspacing="0" cellpadding="3" style="width:310px" >
 <tr><td align="right">SSID:</td><td><input type="text" id="ssid" name="ssid" value=""></td></tr>
 <tr><td align="right">Password:</td><td><input type="text" id="password" name="password" value=""></td></tr>
-<tr><td align="right">DHCP:</td><td><input type="checkbox" id="dhcp" name="dhcp"></td></tr>
+<tr>
+	<td align="right">Connect to Wifi:</td>	<td><input type="checkbox" id="connectToWifi" name="connectToWifi" value="1"></td>
+	<td align="right">DHCP:</td><td><input type="checkbox" id="dhcp" name="dhcp" value="1"></td></tr>
 <tr><td align="right">IP:     </td><td><input type="text" id="ip_0" name="ip_0" size="3">.<input type="text" id="ip_1" name="ip_1" size="3">.<input type="text" id="ip_2" name="ip_2" size="3">.<input type="text" id="ip_3" name="ip_3" value="" size="3"></td></tr>
 <tr><td align="right">Netmask:</td><td><input type="text" id="nm_0" name="nm_0" size="3">.<input type="text" id="nm_1" name="nm_1" size="3">.<input type="text" id="nm_2" name="nm_2" size="3">.<input type="text" id="nm_3" name="nm_3" size="3"></td></tr>
 <tr><td align="right">Gateway:</td><td><input type="text" id="gw_0" name="gw_0" size="3">.<input type="text" id="gw_1" name="gw_1" size="3">.<input type="text" id="gw_2" name="gw_2" size="3">.<input type="text" id="gw_3" name="gw_3" size="3"></td></tr>
@@ -92,9 +94,12 @@ void send_network_configuration_html()
 	{
 		String temp = "";
 		config.dhcp = false;
+		config.connectToWifi = false;
+		DEBUG_MSG("\n\n");
 		for ( uint8_t i = 0; i < server.args(); i++ ) {
-			if (server.argName(i) == "ssid") config.ssid =   urldecode(server.arg(i));
-			if (server.argName(i) == "password") config.password =    urldecode(server.arg(i));
+			if (server.argName(i) == "ssid") strcpy_cln(config.ssid, urldecode(server.arg(i)).c_str(), sizeof(config.ssid));
+			if (server.argName(i) == "password") strcpy_cln(config.password,urldecode(server.arg(i)).c_str(), sizeof(config.password));
+			if (server.argName(i) == "connectToWifi") config.connectToWifi = server.arg(i).toInt(); // to do check if this if correct...
 			if (server.argName(i) == "ip_0") if (checkRange(server.arg(i))) 	config.IP[0] =  server.arg(i).toInt();
 			if (server.argName(i) == "ip_1") if (checkRange(server.arg(i))) 	config.IP[1] =  server.arg(i).toInt();
 			if (server.argName(i) == "ip_2") if (checkRange(server.arg(i))) 	config.IP[2] =  server.arg(i).toInt();
@@ -107,7 +112,7 @@ void send_network_configuration_html()
 			if (server.argName(i) == "gw_1") if (checkRange(server.arg(i))) 	config.Gateway[1] =  server.arg(i).toInt();
 			if (server.argName(i) == "gw_2") if (checkRange(server.arg(i))) 	config.Gateway[2] =  server.arg(i).toInt();
 			if (server.argName(i) == "gw_3") if (checkRange(server.arg(i))) 	config.Gateway[3] =  server.arg(i).toInt();
-			if (server.argName(i) == "dhcp") config.dhcp = true;
+			if (server.argName(i) == "dhcp") config.dhcp = true; // to do check if this if correct...
 		}
 		
 		server.send_P ( 200, "text/html", PAGE_WaitAndReload );
@@ -138,6 +143,8 @@ void send_network_configuration_values_html()
 
 	values += "ssid|" + (String) config.ssid + "|input\n";
 	values += "password|" +  (String) config.password + "|input\n";
+	//values += "connectToWifi|" +  (String) config.connectToWifi  + "|input\n";
+	values += "connectToWifi|" +  (String) (config.connectToWifi ? "checked" : "") + "|chk\n";
 	values += "ip_0|" +  (String) config.IP[0] + "|input\n";
 	values += "ip_1|" +  (String) config.IP[1] + "|input\n";
 	values += "ip_2|" +  (String) config.IP[2] + "|input\n";

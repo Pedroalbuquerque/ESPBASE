@@ -1,4 +1,7 @@
 # ESPBASE lib
+
+(Branch "Parameters" under constuction, expect the unexpected)
+
 library to build ESP8266/ESP32 projects using OTA and Web config
 
 This lib was created to simplify the creation of any new project from scratch but starting with many Wifi and Web functionalities already available to be used in code with minimum configuration effort.
