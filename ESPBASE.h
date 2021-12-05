@@ -52,8 +52,9 @@
   #include <Ticker.h>
   #include <EEPROM.h>
 
-  #define EEPROM_SIZE 512
-  
+  #ifndef EEPROM_SIZE
+    #define EEPROM_SIZE 512
+  #endif
   extern "C" {
   #include "user_interface.h"
   }
@@ -103,7 +104,8 @@ public:
     #elif defined(ESP8266)
     void setWifiProtocol ( uint8_t protocol );//WIFI_PHY_MODE_11B = 1, WIFI_PHY_MODE_11G = 2, WIFI_PHY_MODE_11N = 3
     #endif
-    channel_t channelList[13]; // collect channel load with wifiScan
+    #define MAXLIST 30
+    channel_t channelList[MAXLIST]; // collect channel load with wifiScan
     uint8_t getRecommendedChannel();
 };
 
@@ -124,6 +126,18 @@ public:
 
 
 //char tmpESP[100];
+/*
+ESPBASE::ESPBASE(){
+    // define parameters storage
+  #if defined(ESP32)  //ARDUINO_ESP32_DEV
+    EEPROM.begin("ESPBASE", false);
+    //PWM_initialize(LED_esp,256,0,5000,13);
+  #elif defined(ESP8266) //ARDUINO_ESP8266_NODEMCU || ARDUINO_ESP8266_ESP01
+    EEPROM.begin(512); // define an EEPROM space of 512Bytes to store data
+  #endif
+
+}
+*/
 
 void ESPBASE::initialize( uint8_t asStation = true, uint8_t _forceDefaults, const char * adminroot){
   forceDefaults = _forceDefaults;
@@ -152,7 +166,7 @@ void ESPBASE::initialize(uint8_t asStation, int32_t channel , const uint8_t *bss
     tkSecond.attach(1, ISRsecondTick);
     ECHO_MSG("Time ISR setup complete!\n");
 
-    if(WIFI_connected){
+    if(WIFI_connected && ( (String)config.ntpServerName != String(""))){
       getNTPtime();
     }
     ECHO_MSG("Ready\n");
@@ -162,9 +176,10 @@ void ESPBASE::initialize(uint8_t asStation, int32_t channel , const uint8_t *bss
 uint8_t ESPBASE::getRecommendedChannel() // get least ocupied channel
 {  
   uint8_t n = WiFi.scanNetworks();
+  if(n>MAXLIST) n = MAXLIST;
   uint32_t bestChannel = 0 ;  // channel with least number of AP
   // clean SSIDlist array
-  for (uint8_t i = 0; i < 14 ; i ++ ){ 
+  for (uint8_t i = 0; i < MAXLIST ; i ++ ){ 
     channelList[i].count = 0;
     channelList[i].overload = 0 ;
     channelList[i].nameList = "";
@@ -263,7 +278,15 @@ void ESPBASE::WiFiconnect(uint8_t asStation, int32_t channel , const uint8_t *bs
 
       // Connect the ESP8266 to local WIFI network in Station mode
       // using SSID and password saved in parameters (config object)
-      ECHO_MSG("Connecting to WiFi");
+      if(bssid){
+        ECHO_MSG("Connecting to WiFi:%s",macToString(bssid).c_str());
+      }
+      else{
+        ECHO_MSG("Connecting to WiFi:%s",config.ssid);
+       }
+      if(!config.dhcp and config.IP[0]){
+          WiFi.config(config.IP,config.Gateway,config.Netmask);
+      }
       WiFi.disconnect(); // just to be sure ...
       WiFi.mode(WIFI_OFF);
       WiFi.mode(WIFI_STA);

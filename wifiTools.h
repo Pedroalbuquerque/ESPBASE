@@ -4,6 +4,7 @@
 
 #if defined(ESP32)
   ESP32WebServer server(80);							// The Webserver
+  //AsyncWebServer server(80);              // to do : adjust the hole library for async server
 #elif defined(ESP8266) //ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
   ESP8266WebServer server(80);							// The Webserver
 #else
@@ -30,6 +31,11 @@ void ConfigureWifi(){
   }
 }
 
+String macToString(const uint8_t *mac){
+  char macStr[18] = {0};
+  sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0],  mac[1], mac[2], mac[3], mac[4], mac[5]);
+  return  String(macStr);
+}
 
 String GetMacAddress(){
   uint8_t mac[6];

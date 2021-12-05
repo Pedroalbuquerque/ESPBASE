@@ -4,6 +4,10 @@
 
 #include <PACharTools.h>
 #include <PAcrc32.h>
+#if defined(ESP32) // ARDUINO_ESP32_DEV
+  #include <Preferences.h>
+  Preferences EEPROM;
+#endif
 
 extern uint16_t getChipId();
 
@@ -65,16 +69,12 @@ void printConfig(){
 }
 
 
-#if defined(ESP32) // ARDUINO_ESP32_DEV
-
-  #include <Preferences.h>
-
-  Preferences EEPROM;
-
+  /*
   void WriteConfig(){
 
     ECHO_MSG("Writing Config\n");
 
+    
     EEPROM.putString("head", "CFG");
     EEPROM.putUChar("dhcp", config.dhcp);
     EEPROM.putUChar("isDayLight", config.isDayLightSaving);
@@ -99,15 +99,20 @@ void printConfig(){
     EEPROM.putString("OTApwd", config.OTApwd);
     EEPROM.putString("CFGpwd", config.CFGpwd);
     EEPROM.putString("WIFIpwd", config.WIFIpwd);
-
+    
 
 
   }
   boolean ReadConfig(){
     ECHO_MSG("\nReading Configuration\n");
+
+    
     if (EEPROM.getString("head") == "CFG" )
     {
       ECHO_MSG("Configurarion Found!\n");
+
+
+      
       config.dhcp = EEPROM.getUChar("dhcp",0);
       config.isDayLightSaving = EEPROM.getUChar("isDayLight");
       config.Update_Time_Via_NTP_Every = EEPROM.getULong("NTPrate"); // 4 Byte
@@ -131,7 +136,7 @@ void printConfig(){
       config.OTApwd = EEPROM.getString("OTApwd");
       config.CFGpwd = EEPROM.getString("CFGpwd");
       config.WIFIpwd = EEPROM.getString("WIFIpwd");
-
+      
       // Application parameters here ... from EEPROM 192 to 511
 
       return true;
@@ -142,80 +147,89 @@ void printConfig(){
       ECHO_MSG("Configurarion NOT FOUND!!!!\n");
       return false;
     }
+    
   }
 
+*/
 
+void configLoadDefaults(uint16_t ChipId){
+  config.crc = 0;
+  #if defined(ESP32) // ARDUINO_ESP32_DEV
+    strcpy_cln(config.ssid,"",sizeof(config.ssid)); // SSID of access point
+    //config.ssid = "ESP32-" + String(ChipId,HEX);       // SSID of access point
+  #elif defined(ESP8266) //ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
+    //config.ssid = "ESP8266-" + String(ChipId,HEX);       // SSID of access point
+    strcpy_cln(config.ssid,"",sizeof(config.ssid));
+  #endif
+  strcpy_cln(config.password, "",sizeof(config.password)) ;   // password of access point
+  config.connectToWifi = false;
+  config.dhcp = true;
+  config.IP[0] = 192; config.IP[1] = 168; config.IP[2] = 1; config.IP[3] = 100;
+  config.Netmask[0] = 255; config.Netmask[1] = 255; config.Netmask[2] = 255; config.Netmask[3] = 0;
+  config.Gateway[0] = 192; config.Gateway[1] = 168; config.Gateway[2] = 1; config.Gateway[3] = 254;
+  //config.ntpServerName = "0.pt.pool.ntp.org"; //"0.ch.pool.ntp.org"; // to be adjusted to PT ntp.ist.utl.pt
+  strcpy_cln(config.ntpServerName, "0.pt.pool.ntp.org", sizeof(config.ntpServerName)) ;  
+  config.Update_Time_Via_NTP_Every =  5;
+  config.timeZone = 1;
+  config.isDayLightSaving = true;
+  //config.DeviceName = "Not Named";
+  strcpy_cln(config.DeviceName, "Not Named", sizeof(config.DeviceName)) ;  
+  //config.OTApwd = "";
+  strcpy_cln(config.OTApwd, "", sizeof(config.OTApwd)) ;  
+  //config.CFGpwd = "";
+  strcpy_cln(config.CFGpwd, "", sizeof(config.CFGpwd)) ;  
+  //config.WIFIpwd = "";
+  strcpy_cln(config.WIFIpwd, "", sizeof(config.WIFIpwd)) ;  
+  strcpy_cln(config.mqttServer, "", sizeof(config.mqttServer)) ;  
+  strcpy_cln(config.mqttUser, "", sizeof(config.mqttUser)) ;  
+  strcpy_cln(config.mqttPwd, "", sizeof(config.mqttPwd)) ;  
+  config.nodeID = 0;
+  return;
 
-#elif defined(ESP8266) //ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
-  //  Auxiliar function to handle EEPROM
+}
 
-  void configLoadDefaults(uint16_t ChipId){
-    config.crc = 0;
-    #if defined(ESP32) // ARDUINO_ESP32_DEV
-      config.ssid = "ESP32-" + String(ChipId,HEX);       // SSID of access point
-    #elif defined(ESP8266) //ARDUINO_ESP8266_ESP01 || ARDUINO_ESP8266_NODEMCU
-      //config.ssid = "ESP8266-" + String(ChipId,HEX);       // SSID of access point
-      strcpy_cln(config.ssid,("ESP8266-" + String(ChipId,HEX)).c_str(),sizeof(config.ssid));
-    #endif
-    strcpy_cln(config.password, "",sizeof(config.password)) ;   // password of access point
-    config.connectToWifi = false;
-    config.dhcp = true;
-    config.IP[0] = 192; config.IP[1] = 168; config.IP[2] = 1; config.IP[3] = 100;
-    config.Netmask[0] = 255; config.Netmask[1] = 255; config.Netmask[2] = 255; config.Netmask[3] = 0;
-    config.Gateway[0] = 192; config.Gateway[1] = 168; config.Gateway[2] = 1; config.Gateway[3] = 254;
-    //config.ntpServerName = "0.pt.pool.ntp.org"; //"0.ch.pool.ntp.org"; // to be adjusted to PT ntp.ist.utl.pt
-    strcpy_cln(config.ntpServerName, "0.pt.pool.ntp.org", sizeof(config.ntpServerName)) ;  
-    config.Update_Time_Via_NTP_Every =  5;
-    config.timeZone = 1;
-    config.isDayLightSaving = true;
-    //config.DeviceName = "Not Named";
-    strcpy_cln(config.DeviceName, "Not Named", sizeof(config.DeviceName)) ;  
-    //config.OTApwd = "";
-    strcpy_cln(config.OTApwd, "", sizeof(config.OTApwd)) ;  
-    //config.CFGpwd = "";
-    strcpy_cln(config.CFGpwd, "", sizeof(config.CFGpwd)) ;  
-    //config.WIFIpwd = "";
-    strcpy_cln(config.WIFIpwd, "", sizeof(config.WIFIpwd)) ;  
-    strcpy_cln(config.mqttServer, "", sizeof(config.mqttServer)) ;  
-    strcpy_cln(config.mqttUser, "", sizeof(config.mqttUser)) ;  
-    strcpy_cln(config.mqttPwd, "", sizeof(config.mqttPwd)) ;  
-    config.nodeID = 0;
-    return;
+void WriteConfig(){
 
-  }
+  ECHO_MSG("Writing Config\n");
 
-  void WriteConfig(){
-
-    ECHO_MSG("Writing Config\n");
-
-    config.crc = calculateCRC32((uint8_t *)&config+4 ,sizeof(config) -4 );
-    //DEBUG_MSG("[ESPBASE writeEEPROM] crc:%lu\n",config.crc);
+  config.crc = calculateCRC32((uint8_t *)&config+4 ,sizeof(config) -4 );
+  //DEBUG_MSG("[ESPBASE writeEEPROM] crc:%lu\n",config.crc);
+  #if defined(ESP32)
+    EEPROM.putBytes("config", &config,sizeof(config));
+  #elif defined(ESP8266) 
     EEPROM.put(0, config);    
     EEPROM.commit();
-  }
+  #else
+    #error "EEPROM not available on this board"
+  #endif
+}
 
-  boolean ReadConfig(){
-    ECHO_MSG("\nReading Configuration\n");
-    //DEBUG_MSG("[read config] crc:%lu\tmqttServer(before):%s\n",config.crc,config.mqttServer);
-    uint32_t tmpCRC;
+boolean ReadConfig(){
+  ECHO_MSG("\nReading Configuration\n");
+  //DEBUG_MSG("[read config] crc:%lu\tmqttServer(before):%s\n",config.crc,config.mqttServer);
+  uint32_t tmpCRC;
+  #if defined(ESP32)
+    EEPROM.getBytes("config", &config,sizeof(config));
+  #elif defined(ESP8266) 
     EEPROM.get(0,config);
-    //DEBUG_MSG("[read config] crc:%lu\tmqttServer(after):%s\n",config.crc,config.mqttServer);
-    tmpCRC = calculateCRC32((uint8_t *) &config+4 ,sizeof(config) -4 );
-    //DEBUG_MSG("[ESPBASE readEEPROM] read crc:%lu\t calc CRC:%lu\n",config.crc,tmpCRC);
-    if(config.crc == tmpCRC){
-      ECHO_MSG("Configuration Found!\n");
-      return true;
-    }
-    else{
-      ECHO_MSG("Configurarion NOT FOUND!!!!\n");
-      configLoadDefaults(getChipId());
-      return false;
-    }
+    EEPROM.commit();
+  #else
+    #error "EEPROM not available on this board"
+  #endif
 
+  //DEBUG_MSG("[read config] crc:%lu\tmqttServer(after):%s\n",config.crc,config.mqttServer);
+  tmpCRC = calculateCRC32((uint8_t *) &config+4 ,sizeof(config) -4 );
+  //DEBUG_MSG("[ESPBASE readEEPROM] read crc:%lu\t calc CRC:%lu\n",config.crc,tmpCRC);
+  if(config.crc == tmpCRC){
+    ECHO_MSG("Configuration Found!\n");
+    return true;
+  }
+  else{
+    ECHO_MSG("Configurarion NOT FOUND!!!!\n");
+    configLoadDefaults(getChipId());
+    return false;
   }
 
-
-#endif  // ESP8266
-
+}
 
 #endif
